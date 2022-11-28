@@ -2,94 +2,115 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\TaskStatus;
+use App\Http\Requests\IndexProjectRequest;
+use App\Http\Requests\StoreTaskRequest;
+use App\Http\Requests\UpdateTaskRequest;
+use App\Services\TaskService;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
 
+    private $taskService;
+
+    /**
+     * TaskController constructor.
+     */
     public function __construct()
     {
-        // service task
-    }
 
-    public function list()
-    {
-
-        $tasks = Task::all();
-
-        return response()->json([
-            'status' => 'success',
-            'tasks' => $tasks,
-        ]);
+        $this->taskService = new TaskService();
 
     }
 
-    public function store(Request $request)
+    /**
+     * Search tasks of a projects
+     *
+     * @param IndexProjectRequest $request
+     * @param $projectId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function index( IndexProjectRequest $request, $projectId )
     {
 
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string|max:255',
-        ]);
+        $params = $request->validated();
 
-        $task = Task::create([
-            'title' => $request->title,
-            'description' => $request->description,
-            'user_id' => Auth::user()->id,
-        ]);
+        $projects = $this->taskService->search( $projectId, $params );
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Task created successfully',
-            'task' => $task,
-        ]);
+        return response()->json( $projects );
 
     }
 
-    public function show($id)
+    /**
+     * Store new task in a project
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function store( StoreTaskRequest $request, $projectId )
     {
 
-        $task = Task::find($id);
+        $params = $request->validated();
 
-        return response()->json([
-            'status' => 'success',
-            'task' => $task,
-        ]);
+        $project = $this->taskService->store( $projectId, $params );
+
+        return response()->json( $project );
 
     }
 
-    public function update(Request $request, $id)
+    /**
+     * Get task info
+     *
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function show( $projectId, $taskId )
     {
 
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string|max:255',
-        ]);
+        $task = $this->taskService->searchById( $projectId, $taskId );
 
-        $task = Task::find($id);
-        $task->title = $request->title;
-        $task->description = $request->description;
-        $task->save();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Task updated successfully',
-            'task' => $task,
-        ]);
+        return response()->json( $task );
 
     }
 
-    public function destroy($id)
+    /**
+     * Update task
+     *
+     * @param Request $request
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function update( UpdateTaskRequest $request, $projectId, $taskId )
     {
 
-        $task = Task::find($id);
-        $task->delete();
+        $params = $request->validated();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Task deleted successfully',
-            'task' => $task,
-        ]);
+        $project = $this->taskService->update( $projectId, $taskId, $params );
+
+        return response()->json( $project );
+
+    }
+
+    /**
+     * Update status of a task
+     *
+     * @param $id
+     * @param $status
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function changeStatus( $projectId, $taskId, $status )
+    {
+
+        if ( !in_array( $status, TaskStatus::getValues() ) ) {
+
+            return response()->json( [ 'message' => 'Invalid status.' ], 400 );
+
+        }
+
+        $this->taskService->changeStatus( $projectId, $taskId, $status );
+
+        return response()->json( [ 'message' => 'Status updated successfully.' ], 204 );
 
     }
 

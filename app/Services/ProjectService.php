@@ -2,18 +2,18 @@
 
 namespace App\Services;
 
+use App\Enums\Status;
 use App\Models\Project;
-use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Http\Request;
-use App\Enums\ProjectSort;
-use BenSampo\Enum\Rules\EnumValue;
-use Illuminate\Support\ItemNotFoundException;
+use Illuminate\Database\Eloquent\Collection;
 
 class ProjectService
 {
 
     private $projectModel;
 
+    /**
+     * ProjectService constructor.
+     */
     public function __construct()
     {
         $this->projectModel = new Project();
@@ -27,7 +27,7 @@ class ProjectService
      */
     public function searchById( $id )
     {
-        return $this->projectModel->searchById( $id );
+        return $this->projectModel->searchById( $id )->first();
     }
 
     /**
@@ -52,8 +52,7 @@ class ProjectService
 
         $project = Project::create( [
             'title' => $params[ 'title' ],
-            'description' => $params[ 'description' ],
-            'slug' => ''
+            'description' => $params[ 'description' ]
         ] );
 
         $project->setSlugAttribute();
@@ -63,16 +62,55 @@ class ProjectService
 
     }
 
+    /**
+     * Update title or description
+     *
+     * @param $id
+     * @param $params
+     * @return mixed
+     */
     public function update( $id, $params )
     {
 
-            $project = $this->projectModel->searchById( $id )->first();
-            $project->title = $params[ 'title' ];
-            $project->description = $params[ 'description' ];
-            $project->setSlugAttribute();
-            $project->save();
+        $project = $this->projectModel->searchById( $id )->first();
+        $project->title = $params[ 'title' ];
+        $project->description = $params[ 'description' ];
+        $project->setSlugAttribute();
+        $project->save();
 
-            return $project;
+        return $project;
+
+    }
+
+    /**
+     * Update status
+     *
+     * @param $id
+     * @param $newStatus
+     * @return bool
+     */
+    public function changeStatus( $id, $newStatus )
+    {
+
+        $project = $this->projectModel->searchById( $id )->first();
+
+        if ( $newStatus === Status::OPEN && $project->status === Status::OPEN ) {
+
+            return true;
+
+        }
+
+        if ( $newStatus === Status::CLOSE && $project->unclosedTasks()->get()->isEmpty() ) {
+
+            $project->update([
+                'status' => Status::CLOSE
+            ]);
+
+            return true;
+
+        }
+
+        return false;
 
     }
 

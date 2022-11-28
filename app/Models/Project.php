@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ProjectSort;
+use App\Enums\Status;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\ItemNotFoundException;
 
-class Project extends Model
+class Project extends SearchableModel
 {
 
     use HasFactory, Uuid;
@@ -27,6 +28,7 @@ class Project extends Model
     public $incrementing = false;
 
     protected $attributes = [
+        'slug' => '',
         'status' => 'aperto'
     ];
 
@@ -52,16 +54,6 @@ class Project extends Model
     ];
 
     /**
-     * Retrieve all tasks of a project
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function tasks()
-    {
-        return $this->hasMany( Task::class );
-    }
-
-    /**
      * Set slug attribute
      *
      * @return mixed
@@ -72,12 +64,32 @@ class Project extends Model
     }
 
     /**
+     * Retrieve all tasks of a project
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function tasks()
+    {
+        return $this->hasMany( Task::class );
+    }
+
+    /**
+     * Retrieve all tasks of a project
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function unclosedTasks()
+    {
+        return $this->hasMany( Task::class )->where('status', Status::OPEN);
+    }
+
+    /**
      * Add open tasks statement to query builder
      *
      * @param $query
      * @return mixed
      */
-    private function addOpenTaskStatement( $query )
+    private function addOpenTaskCounter( $query )
     {
         return $query->withCount( [ 'tasks AS open_tasks' => function ( Builder $q ) {
             $q->where( 'status', 'open' );
@@ -90,7 +102,7 @@ class Project extends Model
      * @param $query
      * @return mixed
      */
-    private function addClosedTaskStatement( $query )
+    private function addClosedTaskCounter( $query )
     {
         return $query->withCount( [ 'tasks AS closed_tasks' => function ( Builder $q ) {
             $q->where( 'status', 'close' );
@@ -98,7 +110,7 @@ class Project extends Model
     }
 
     /**
-     * Search project by id
+     * Search by id
      *
      * @param $id
      * @return mixed
@@ -111,19 +123,19 @@ class Project extends Model
         $query->where( 'id', $id )
             ->orWhere( 'slug', $id );
 
-        $query = $this->addOpenTaskStatement( $query );
-        $query = $this->addClosedTaskStatement( $query );
+        $query = $this->addOpenTaskCounter( $query );
+        $query = $this->addClosedTaskCounter( $query );
 
         $result = $query->get();
 
-        if ( $result->isEmpty() ) throw new HttpResponseException( response()->json( [ 'error' => 'No results found.' ], 205 ) );
+        if ( $result->isEmpty() ) throw new HttpResponseException( response()->json( [ 'error' => 'Project not found.' ], 404 ) );
 
         return $result;
 
     }
 
     /**
-     * Search project by params
+     * Search by params
      *
      * @param array $params
      */
@@ -132,54 +144,53 @@ class Project extends Model
 
         $query = $this->newQuery();
 
-        // STATUS PARAM
-        if ( !empty( $params[ 'withClosed' ] ) ) {
-
-            $query->where( 'status', 'aperto' )
-                ->orWhere( 'status', 'chiuso' );
-
-        } else if ( !empty( $params[ 'onlyClosed' ] ) ) {
-
-            $query->where( 'status', 'chiuso' );
-
-        } else {
-
-            $query->where( 'status', 'aperto' );
-
-        }
-
-        // ORDER BY
-        switch ( $params[ 'sortBy' ] ) {
-
-            case ProjectSort::ALPHA_DESC:
-                $query->orderByDesc( 'title' );
-                break;
-
-            case ProjectSort::ALPHA_ASC:
-                $query->orderBy( 'title' );
-                break;
-
-            case ProjectSort::UPDATE:
-                $query->orderBy( 'updated_at' );
-                break;
-
-            default:
-                $query->orderBy( 'created_at' );
-                break;
-        }
+        $query = $this->addStatusStatement( $query, $params );
+        $query = $this->addOrderByStatement( $query, $params );
 
         // COUNTERS
-        $query = $this->addOpenTaskStatement( $query );
-        $query = $this->addClosedTaskStatement( $query );
+        $query = $this->addOpenTaskCounter( $query, $params );
+        $query = $this->addClosedTaskCounter( $query, $params );
 
-        // PAGINATION
         $query->paginate( $params[ 'perPage' ] );
 
         $result = $query->get();
 
-        if ( $result->isEmpty() ) throw new HttpResponseException( response()->json( [ 'error' => 'No results found.' ], 204 ) );
+        if ( $result->isEmpty() ) {
+
+            throw new HttpResponseException( response()->json( [ 'error' => 'No results found.' ], 204 ) );
+
+        }
 
         return $result;
+
+    }
+
+    /**
+     * Add status conditions to query
+     *
+     * @param $query
+     * @param $params
+     * @return mixed
+     */
+    protected function addStatusStatement( $query, $params )
+    {
+
+        if ( !empty( $params[ 'withClosed' ] ) ) {
+
+            $query->where( 'status', Status::OPEN )
+                ->orWhere( 'status', Status::CLOSE );
+
+        } else if ( !empty( $params[ 'onlyClosed' ] ) ) {
+
+            $query->where( 'status', Status::CLOSE );
+
+        } else {
+
+            $query->where( 'status', Status::OPEN );
+
+        }
+
+        return $query;
 
     }
 

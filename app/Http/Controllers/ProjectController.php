@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ProjectSort;
+use App\Enums\Status;
 use App\Http\Requests\IndexProjectRequest;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
@@ -16,6 +17,9 @@ class ProjectController extends Controller
 
     private $projectService;
 
+    /**
+     * ProjectController constructor.
+     */
     public function __construct()
     {
 
@@ -23,6 +27,12 @@ class ProjectController extends Controller
 
     }
 
+    /**
+     * Search and get projects informations
+     *
+     * @param IndexProjectRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function index( IndexProjectRequest $request )
     {
 
@@ -34,6 +44,12 @@ class ProjectController extends Controller
 
     }
 
+    /**
+     * Store new project
+     *
+     * @param StoreProjectRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function store( StoreProjectRequest $request )
     {
 
@@ -45,6 +61,12 @@ class ProjectController extends Controller
 
     }
 
+    /**
+     * Get project info
+     *
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function show( $id )
     {
 
@@ -54,6 +76,13 @@ class ProjectController extends Controller
 
     }
 
+    /**
+     * Update title or description of a project
+     *
+     * @param UpdateProjectRequest $request
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function update( UpdateProjectRequest $request, $id )
     {
 
@@ -65,26 +94,31 @@ class ProjectController extends Controller
 
     }
 
-//    public function change_status( Request $request, $id )
-//    {
-//
-//        $project = $this->projectService->update( $id );
-//
-//        return response()->json( $project );
-//
-//    }
-
-    public function destroy( $id )
+    /**
+     * Update status of a project
+     *
+     * @param $id
+     * @param $status
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function changeStatus( $id, $status )
     {
 
-        $project = Project::find( $id );
-        $project->delete();
+        if ( !in_array( $status, Status::getValues() ) ) {
 
-        return response()->json( [
-            'status' => 'success',
-            'message' => 'Project deleted successfully',
-            'project' => $project,
-        ] );
+            return response()->json( [ 'message' => 'Invalid status.' ], 400 );
+
+        }
+
+        $response = response()->json( [ 'message' => 'Status updated successfully.' ], 204 );
+
+        if ( !$this->projectService->changeStatus( $id, $status ) ) {
+
+            $response = response()->json( [ 'message' => 'Operation not permitted.' ], 400 );
+
+        }
+
+        return $response;
 
     }
 

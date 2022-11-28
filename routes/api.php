@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\TaskController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,20 +32,18 @@ Route::controller( ProjectController::class )->middleware( 'auth:api' )->group( 
     Route::post( 'projects', 'store' );
     Route::get( 'projects/{project}', 'show' );
     Route::patch('projects/{project}', 'update');
-    Route::patch('projects/{project}/[open|close]', 'change_status');
-
-
-    Route::delete( 'projects/{id}', 'destroy' );
+    Route::patch('projects/{project}/{status}', 'changeStatus');
+//    Route::delete( 'projects/{id}', 'destroy' );
 
 });
 
 Route::controller( TaskController::class )->middleware( 'auth:api' )->group( function () {
 
-    Route::get( 'tasks', 'list' );
-    Route::post( 'tasks', 'store' );
-    Route::get( 'tasks/{id}', 'show' );
-    Route::put('tasks/{id}', 'update');
-    Route::delete( 'tasks/{id}', 'destroy' );
+    Route::get( 'projects/{project}/tasks', 'index' );
+    Route::post( 'projects/{project}/tasks', 'store' );
+    Route::get( 'projects/{project}/tasks/{task}', 'show' );
+    Route::patch('projects/{project}/tasks/{task}', 'update');
+    Route::patch( 'projects/{project}/tasks/{task}/{status}', 'changeStatus' );
 
 });
 

@@ -3,6 +3,9 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use BenSampo\Enum\Rules\EnumValue;
+use App\Enums\TaskPriority;
+use App\Enums\TaskStatus;
 
 return new class extends Migration {
 
@@ -18,9 +21,10 @@ return new class extends Migration {
             $table->uuid( 'id' )->nullable(false);
             $table->string( 'title' )->nullable( false );
             $table->text( 'description' );
+            $table->string( 'slug' )->nullable( false );
             $table->smallInteger( 'difficulty' );
-            $table->enum( 'status', [ 'open', 'block', 'close' ] );
-            $table->enum( 'priority', [ 'low', 'medium', 'high', 'very high' ] )->default( 'low' );
+            $table->enum( 'status', TaskStatus::getValues() )->default( TaskStatus::OPEN );
+            $table->enum( 'priority', TaskPriority::getValues() )->default( TaskPriority::LOW );
 
             $table->uuid('assignee')->references('id')->on('users');
             $table->foreignUuid('project_id');

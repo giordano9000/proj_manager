@@ -21,6 +21,7 @@ class TasksSeeder extends Seeder
         Task::create([
             'title' => 'autenticazione',
             'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam mollis imperdiet felis in volutpat.',
+            'slug' => '',
             'difficulty' => 3,
             'status' => 'open',
             'priority' => 'medium',
@@ -84,6 +85,10 @@ class TasksSeeder extends Seeder
 //            'created_at' => '2021-10-26 17:14:58',
 //            'updated_at' => '2022-03-21 13:14:58'
 //        ]);
+
+        DB::table('tasks')->update([
+            'slug' => DB::raw("CONCAT(id, '-', title)")
+        ]);
 
         $this->command->info('Tasks table seeded!');
     }

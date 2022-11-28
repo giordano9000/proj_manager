@@ -3,6 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use BenSampo\Enum\Rules\EnumValue;
+use App\Enums\Status;
 
 return new class extends Migration
 {
@@ -20,7 +22,7 @@ return new class extends Migration
             $table->string('title')->nullable(false);
             $table->text('description')->nullable();
             $table->string('slug')->nullable(false);
-            $table->enum( 'status', [ 'aperto', 'chiuso' ] )->default( 'aperto' );
+            $table->enum( 'status', Status::getValues() )->default( Status::OPEN );
 
             $table->timestamps();
 
