@@ -3,8 +3,9 @@
 namespace App\Models;
 
 use App\Enums\ProjectSort;
-use App\Enums\Status;
+use App\Interfaces\Searchable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Wrap all commons functions used from query builder
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * Class SearchableModel
  * @package App\Models
  */
-abstract class SearchableModel extends Model
+abstract class SearchableModel extends Model implements Searchable
 {
 
     /**
@@ -23,7 +24,7 @@ abstract class SearchableModel extends Model
      * @param $params
      * @return mixed
      */
-    protected function addOrderByStatement( $query, $params )
+    public function addOrderByStatement( Builder $query, array $params )
     {
 
         switch ( $params[ 'sortBy' ] ) {
