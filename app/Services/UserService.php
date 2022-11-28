@@ -10,47 +10,45 @@ use Illuminate\Http\Request;
 class UserService
 {
 
-    public function login( Request $request ): ?string
+    public function login( array $credentials ) : ?string
     {
-
-        $credentials = $request->only(['email', 'password']);
 
         return $this->checkCredentials( $credentials );
 
     }
 
-    private function checkCredentials( $credentials ): ?string
+    private function checkCredentials( array $credentials ) : ?string
     {
         return Auth::attempt( $credentials );
     }
 
-    public function getUserToken( User $user )
+    public function getUserToken( User $user ) : string
     {
-        return Auth::login($user);
+        return Auth::login( $user );
     }
 
-    public function getLoggedUser(): User
+    public function getLoggedUser() : User
     {
         return Auth::user();
     }
 
-    public function refreshToken(): string
+    public function refreshToken() : string
     {
         return Auth::refresh();
     }
 
-    public function register( Request $request ): User
+    public function register( array $params ) : User
     {
 
-        return User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        return User::create( [
+            'name' => $params[ 'name' ],
+            'email' => $params[ 'email' ],
+            'password' => Hash::make( $params[ 'password' ] ),
+        ] );
 
     }
 
-    public function logout(): void
+    public function logout() : void
     {
         Auth::logout();
     }

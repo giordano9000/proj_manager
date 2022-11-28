@@ -30,7 +30,7 @@ class Project extends SearchableModel
 
     protected $attributes = [
         'slug' => '',
-        'status' => 'aperto'
+        'status' => Status::OPEN
     ];
 
     protected $fillable = [
@@ -82,6 +82,16 @@ class Project extends SearchableModel
     public function unclosedTasks()
     {
         return $this->hasMany( Task::class )->whereIn('status', [ TaskStatus::OPEN, TaskStatus::BLOCK ] );
+    }
+
+    /**
+     * Retrieve all unclosed tasks of a project
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function closedTasks()
+    {
+        return $this->hasMany( Task::class )->where('status', TaskStatus::CLOSE );
     }
 
     /**

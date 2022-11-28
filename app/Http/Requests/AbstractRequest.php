@@ -6,7 +6,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class AbstractRequest extends FormRequest
+abstract class AbstractRequest extends FormRequest
 {
 
     /**

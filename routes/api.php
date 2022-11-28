@@ -24,33 +24,32 @@ Route::controller( AuthController::class )->group( function () {
     Route::post( 'logout', 'logout' )->middleware( 'auth:api' );
     Route::post( 'refresh', 'refresh' )->middleware( 'auth:api' );
 
-});
+} );
 
 Route::controller( ProjectController::class )->middleware( 'auth:api' )->group( function () {
 
     Route::get( 'projects', 'index' );
     Route::post( 'projects', 'store' );
     Route::get( 'projects/{project}', 'show' );
-    Route::patch('projects/{project}', 'update');
-    Route::patch('projects/{project}/{status}', 'changeStatus');
-//    Route::delete( 'projects/{id}', 'destroy' );
+    Route::patch( 'projects/{project}', 'update' );
+    Route::patch( 'projects/{project}/{status}', 'changeStatus' )->whereIn( 'status', \App\Enums\Status::getValues() );
 
-});
+} );
 
 Route::controller( TaskController::class )->middleware( 'auth:api' )->group( function () {
 
     Route::get( 'projects/{project}/tasks', 'index' );
     Route::post( 'projects/{project}/tasks', 'store' );
     Route::get( 'projects/{project}/tasks/{task}', 'show' );
-    Route::patch('projects/{project}/tasks/{task}', 'update');
-    Route::patch( 'projects/{project}/tasks/{task}/{status}', 'changeStatus' );
+    Route::patch( 'projects/{project}/tasks/{task}', 'update' );
+    Route::patch( 'projects/{project}/tasks/{task}/{status}', 'changeStatus' )->whereIn( 'status', \App\Enums\TaskStatus::getValues() );
 
-});
+} );
 
-Route::fallback(function() {
+Route::fallback( function () {
 
-    return response()->json([
+    return response()->json( [
         'message' => 'Invalid URL.'
-    ], 404);
+    ], 404 );
 
-});
+} );

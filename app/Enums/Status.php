@@ -7,7 +7,7 @@ use BenSampo\Enum\Enum;
 final class Status extends Enum
 {
 
-    const OPEN = 'aperto';
-    const CLOSE = 'chiuso';
+    const OPEN = 'open';
+    const CLOSE = 'close';
 
 }

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\UserService;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
 
 class AuthController extends Controller
 {
@@ -15,50 +17,57 @@ class AuthController extends Controller
         $this->userService = new UserService();
     }
 
-    public function login(Request $request)
+    /**
+     * Login
+     *
+     * @param LoginRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function login( LoginRequest $request )
     {
 
-        $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string',
-        ]);
+        $credentials = $request->validated();
 
-        $token = $this->userService->login( $request );
+        $token = $this->userService->login( $credentials );
 
-        if (!$token) {
-            return response()->json([
+        if ( !$token ) {
+
+            return response()->json( [
                 'status' => 'error',
                 'message' => 'Invalid credentials',
-            ], 404);
+            ], 404 );
+
         }
 
         $user = $this->userService->getLoggedUser();
 
-        return response()->json([
+        return response()->json( [
             'status' => 'success',
             'user' => $user,
             'authorization' => [
                 'token' => $token,
                 'type' => 'bearer',
             ]
-        ]);
+        ] );
 
     }
 
-    public function register(Request $request)
+    /**
+     * Register new user
+     *
+     * @param RegisterRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function register( RegisterRequest $request )
     {
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6',
-        ]);
+        $params = $request->validated();
 
-        $user = $this->userService->register( $request );
+        $user = $this->userService->register( $params );
 
         $token = $this->userService->getUserToken( $user );
 
-        return response()->json([
+        return response()->json( [
             'status' => 'success',
             'message' => 'User created successfully',
             'user' => $user,
@@ -66,32 +75,42 @@ class AuthController extends Controller
                 'token' => $token,
                 'type' => 'bearer',
             ]
-        ]);
+        ] );
     }
 
+    /**
+     * Logout
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function logout()
     {
 
         $this->userService->logout();
 
-        return response()->json([
+        return response()->json( [
             'status' => 'success',
             'message' => 'Successfully logged out',
-        ]);
+        ] );
 
     }
 
+    /**
+     * Refresh token
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function refresh()
     {
 
-        return response()->json([
+        return response()->json( [
             'status' => 'success',
             'user' => $this->userService->getLoggedUser(),
             'authorization' => [
                 'token' => $this->userService->refreshToken(),
                 'type' => 'bearer',
             ]
-        ]);
+        ] );
 
     }
 
