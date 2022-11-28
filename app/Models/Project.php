@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ProjectSort;
 use App\Enums\Status;
+use App\Enums\TaskStatus;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -74,13 +75,13 @@ class Project extends SearchableModel
     }
 
     /**
-     * Retrieve all tasks of a project
+     * Retrieve all unclosed tasks of a project
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function unclosedTasks()
     {
-        return $this->hasMany( Task::class )->where('status', Status::OPEN);
+        return $this->hasMany( Task::class )->whereIn('status', [ TaskStatus::OPEN, TaskStatus::BLOCK ] );
     }
 
     /**
