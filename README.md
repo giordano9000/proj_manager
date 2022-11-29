@@ -8,11 +8,11 @@ Per fare questo è stato aggiunto il middleware globale <i>CheckJsonMiddleware</
 
 <hr>
 
-Di seguito aclune lib usate:
+Di seguito alcune lib usate:
 <ul>
     <li>L'autenticazione è gestita tramite <code>php-open-source-saver/jwt-auth</code></li>
     <li>La gestione degli Uuid è effettuata con <code>ramsey/uuid-doctrine</code></li>
-    <li>Gli Enum sono gestite con <code>bensampo/laravel-enum</code></li>
+    <li>Gli Enum sono gestiti con <code>bensampo/laravel-enum</code></li>
 </ul>
 
 <hr>
