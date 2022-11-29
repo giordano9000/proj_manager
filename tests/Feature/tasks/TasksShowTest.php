@@ -7,27 +7,28 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
-class ShowTest extends TestCase
+class TasksShowTest extends TestCase
 {
 
     public function test_valid_request()
     {
 
         $token = $this->get_token();
-        $projectId = Project::inRandomOrder()->first()->id;
+        $project = Project::inRandomOrder()->whereHas('tasks')->first();
+        $task = $project->tasks()->first();
 
-        $response = $this->getJson( 'api/projects/' . $projectId, $this->get_auth_header($token) );
-
+        $response = $this->getJson( 'api/projects/' . $project->id . '/tasks/' . $task->id, $this->get_auth_header($token) );
+        $response->assertStatus( 200 );
         $response->assertJsonStructure( [
             'id',
             'title',
             'description',
             'slug',
-            'status',
-            'open_tasks',
-            'closed_tasks',
+            'assignee',
+            'difficulty',
+            'priority',
+            'status'
         ] );
-        $response->assertStatus( 200 );
 
     }
 

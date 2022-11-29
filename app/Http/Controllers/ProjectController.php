@@ -67,7 +67,7 @@ class ProjectController extends Controller
      * @param $id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function show( $id )
+    public function show( string $id )
     {
 
         $project = $this->projectService->searchById( $id );
@@ -83,7 +83,7 @@ class ProjectController extends Controller
      * @param $id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update( UpdateProjectRequest $request, $id )
+    public function update( UpdateProjectRequest $request, string $id )
     {
 
         $params = $request->validated();
@@ -101,7 +101,7 @@ class ProjectController extends Controller
      * @param $status
      * @return \Illuminate\Http\JsonResponse
      */
-    public function changeStatus( $id, $status )
+    public function changeStatus( string $id, string $status )
     {
 
         if ( !in_array( $status, Status::getValues() ) ) {

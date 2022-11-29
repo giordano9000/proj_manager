@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Builder;
 interface Searchable
 {
 
-    function addOrderByStatement( Builder $query, array $params );
+    function searchById( string $id ): mixed;
+    function addStatusStatement( Builder $query, array $params ): mixed;
+    function addOrderByStatement( Builder $query, array $params ): mixed;
 
 }

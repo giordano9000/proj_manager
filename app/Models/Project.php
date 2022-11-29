@@ -97,10 +97,10 @@ class Project extends SearchableModel
     /**
      * Add open tasks statement to query builder
      *
-     * @param $query
-     * @return mixed
+     * @param Builder $query
+     * @return Builder
      */
-    private function addOpenTaskCounter( $query )
+    private function addOpenTaskCounter( Builder $query ): Builder
     {
         return $query->withCount( [ 'tasks AS open_tasks' => function ( Builder $q ) {
             $q->where( 'status', 'open' );
@@ -113,7 +113,7 @@ class Project extends SearchableModel
      * @param $query
      * @return mixed
      */
-    private function addClosedTaskCounter( $query )
+    private function addClosedTaskCounter( Builder $query )
     {
         return $query->withCount( [ 'tasks AS closed_tasks' => function ( Builder $q ) {
             $q->where( 'status', 'close' );
@@ -126,7 +126,7 @@ class Project extends SearchableModel
      * @param $id
      * @return mixed
      */
-    public function searchById( $id )
+    public function searchById( string $id ): mixed
     {
 
         $query = $this->query();
@@ -137,11 +137,7 @@ class Project extends SearchableModel
         $query = $this->addOpenTaskCounter( $query );
         $query = $this->addClosedTaskCounter( $query );
 
-        $result = $query->get();
-
-        if ( $result->isEmpty() ) throw new HttpResponseException( response()->json( [ 'error' => 'Project not found.' ], 404 ) );
-
-        return $result;
+        return $query->first();
 
     }
 
@@ -149,8 +145,9 @@ class Project extends SearchableModel
      * Search by params
      *
      * @param array $params
+     * @return mixed
      */
-    public function search( array $params )
+    public function search( array $params ): mixed
     {
 
         $query = $this->newQuery();
@@ -164,15 +161,7 @@ class Project extends SearchableModel
 
         $query->paginate( $params[ 'perPage' ] );
 
-        $result = $query->get();
-
-        if ( $result->isEmpty() ) {
-
-            throw new HttpResponseException( response()->json( [ 'error' => 'No results found.' ], 204 ) );
-
-        }
-
-        return $result;
+        return $query->get();
 
     }
 
@@ -183,13 +172,12 @@ class Project extends SearchableModel
      * @param $params
      * @return mixed
      */
-    protected function addStatusStatement( $query, $params )
+    public function addStatusStatement( Builder $query, array $params ): mixed
     {
 
         if ( !empty( $params[ 'withClosed' ] ) ) {
 
-            $query->where( 'status', Status::OPEN )
-                ->orWhere( 'status', Status::CLOSE );
+            $query->whereIn( 'status', Status::getValues() );
 
         } else if ( !empty( $params[ 'onlyClosed' ] ) ) {
 

@@ -15,6 +15,17 @@ class IndexTest extends TestCase
         $token = $this->get_token();
         $response = $this->getJson( 'api/projects?page=1&perPage=8&sortBy=alpha_desc', $this->get_auth_header($token) );
         $response->assertStatus( 200 );
+        $response->assertJsonStructure( [
+            '*' => [
+                'id',
+                'title',
+                'description',
+                'slug',
+                'status',
+                'open_tasks',
+                'closed_tasks'
+                ]
+        ] );
 
     }
 

@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
-class UpdateTest extends TestCase
+class TasksUpdateTest extends TestCase
 {
 
     public function test_project_update()

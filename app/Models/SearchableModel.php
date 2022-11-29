@@ -24,7 +24,7 @@ abstract class SearchableModel extends Model implements Searchable
      * @param $params
      * @return mixed
      */
-    public function addOrderByStatement( Builder $query, array $params )
+    public function addOrderByStatement( Builder $query, array $params ): mixed
     {
 
         switch ( $params[ 'sortBy' ] ) {

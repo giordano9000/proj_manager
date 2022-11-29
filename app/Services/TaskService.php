@@ -7,6 +7,7 @@ use App\Enums\TaskStatus;
 use App\Models\Task;
 use App\Models\Project;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use phpDocumentor\Reflection\Types\Mixed_;
 
 class TaskService
 {
@@ -29,12 +30,12 @@ class TaskService
      * @param $params
      * @return \Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection
      */
-    public function searchById( $projectId, $taskId )
+    public function searchById( string $projectId, string $taskId ): array
     {
 
         $this->projectModel->searchById( $projectId );
 
-        $task = $this->taskModel->searchById( $taskId )->first();
+        $task = $this->taskModel->searchById( $taskId );
 
         return $task->only( 'id', 'title', 'description', 'slug', 'assignee', 'difficulty', 'priority', 'status' );
 
@@ -46,17 +47,11 @@ class TaskService
      * @param $params
      * @return \Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection
      */
-    public function search( $projectId, $params )
+    public function search( string $projectId, array $params )
     {
+
         $project = $this->projectModel->searchById( $projectId );
-
-        if ( $project->isEmpty() ) {
-
-            throw new HttpResponseException( response()->json( [ 'message' => 'Project not found.' ], 404 ) );
-
-        }
-
-        return $this->taskModel->search( $params );
+        return $this->taskModel->search( $project->id, $params );
 
     }
 
@@ -66,10 +61,8 @@ class TaskService
      * @param $params
      * @return mixed
      */
-    public function store( $projectId, $params )
+    public function store( string $projectId, array $params ): mixed
     {
-
-        $project = $this->validateProject( $projectId );
 
         $task = Task::create( [
             'title' => $params[ 'title' ],
@@ -77,7 +70,7 @@ class TaskService
             'assignee' => $params[ 'assignee' ],
             'difficulty' => $params[ 'difficulty' ],
             'priority' => $params[ 'priority' ],
-            'project_id' => $project->id
+            'project_id' => $projectId
         ] );
 
         $task->setSlugAttribute();
@@ -95,10 +88,9 @@ class TaskService
      * @param $params
      * @return mixed
      */
-    public function update( $projectId, $taskId, $params )
+    public function update( string $taskId, array $params ): mixed
     {
 
-        $project = $this->validateProject( $projectId );
         $task = $this->taskModel->searchById( $taskId );
 
         $task->title = $params[ 'title' ];
@@ -117,39 +109,36 @@ class TaskService
     /**
      * Update the task status
      *
-     * @param $projectId
-     * @param $taskId
-     * @param $status
-     * @return bool
+     * @param string $projectId
+     * @param string $taskId
+     * @param string $newStatus
      */
-    public function changeStatus( $projectId, $taskId, $newStatus )
+    public function changeStatus( string $taskId, string $newStatus ): void
     {
 
-        $this->validateProject( $projectId );
         $task = $this->taskModel->searchById( $taskId );
         $task->update( [ 'status' => $newStatus ] );
 
     }
 
     /**
-     * Check the project exists and could be modified.
-     * Return the project
+     * Check the task exists and return it
      *
-     * @param $projectId
+     * @param string $taskId
      * @return mixed
      */
-    private function validateProject( $projectId )
+    public function isValid( string $taskId ): mixed
     {
 
-        $project = $this->projectModel->searchById( $projectId )->first();
+        $task = $this->taskModel->searchById( $taskId );
 
-        if ( $project->status === Status::CLOSE ) {
+        if ( empty( $task ) ) {
 
-            throw new HttpResponseException( response()->json( [ 'message' => 'Project is closed.' ], 400 ) );
+            throw new HttpResponseException( response()->json( [ 'message' => 'Task not found.' ], 404 ) );
 
         }
 
-        return $project;
+        return $task;
 
     }
 

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\Status;
 use App\Models\Project;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class ProjectService
 {
@@ -20,19 +21,15 @@ class ProjectService
     }
 
     /**
-     *
-     *
      * @param $params
      * @return \Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection
      */
     public function searchById( $id )
     {
-        return $this->projectModel->searchById( $id )->first();
+        return $this->projectModel->searchById( $id );
     }
 
     /**
-     *
-     *
      * @param $params
      * @return \Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection
      */
@@ -72,7 +69,7 @@ class ProjectService
     public function update( $id, $params )
     {
 
-        $project = $this->projectModel->searchById( $id )->first();
+        $project = $this->projectModel->searchById( $id );
         $project->title = $params[ 'title' ];
         $project->description = $params[ 'description' ];
         $project->setSlugAttribute();
@@ -92,7 +89,7 @@ class ProjectService
     public function changeStatus( $id, $newStatus )
     {
 
-        $project = $this->projectModel->searchById( $id )->first();
+        $project = $this->projectModel->searchById( $id );
 
         if ( $newStatus === Status::OPEN && $project->status === Status::OPEN ) {
 
@@ -111,6 +108,49 @@ class ProjectService
         }
 
         return false;
+
+    }
+
+    /**
+     * Check the project exists and return it
+     *
+     * @param string $projectId
+     * @return mixed
+     */
+    public function isValid( string $projectId ): mixed
+    {
+
+        $project = $this->projectModel->searchById( $projectId );
+
+        if ( empty( $project ) ) {
+
+            throw new HttpResponseException( response()->json( [ 'message' => 'Project not found.' ], 404 ) );
+
+        }
+
+        return $project;
+
+    }
+
+    /**
+     * Check the project exists and could be modified.
+     * Return the project
+     *
+     * @param $projectId
+     * @return mixed
+     */
+    public function isModifiable( string $projectId ): mixed
+    {
+
+        $project = $this->isValid( $projectId );
+
+        if ( $project->status === Status::CLOSE ) {
+
+            throw new HttpResponseException( response()->json( [ 'message' => 'Project is closed.' ], 400 ) );
+
+        }
+
+        return $project;
 
     }
 

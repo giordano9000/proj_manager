@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Traits\Uuid;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\ItemNotFoundException;
 
@@ -68,12 +69,10 @@ class Task extends SearchableModel
 
     /**
      * Set slug attribute
-     *
-     * @return mixed
      */
-    public function setSlugAttribute()
+    public function setSlugAttribute() : void
     {
-        $this->attributes['slug'] = $this->id . '-' . $this->title;
+        $this->attributes[ 'slug' ] = $this->id . '-' . $this->title;
     }
 
     /**
@@ -92,7 +91,7 @@ class Task extends SearchableModel
      * @param $id
      * @return mixed
      */
-    public function searchById( $id )
+    public function searchById( string $id ) : mixed
     {
 
         $query = $this->query();
@@ -100,56 +99,46 @@ class Task extends SearchableModel
         $query->where( 'id', $id )
             ->orWhere( 'slug', $id );
 
-        $result = $query->get();
-
-        if ( $result->isEmpty() ) throw new HttpResponseException( response()->json( [ 'error' => 'Task not found.' ], 404 ) );
-
-        return $result->first();
+        return $query->first();
 
     }
 
     /**
      * Search by params
      *
+     * @param string $projectId
      * @param array $params
+     * @return array|Builder[]|Collection
      */
-    public function search( array $params )
+    public function search( string $projectId, array $params )
     {
 
         $query = $this->newQuery();
+        $query->select( 'id', 'title', 'description', 'slug', 'assignee', 'difficulty', 'priority', 'status' );
+        $query->where( 'project_id', $projectId );
 
         $query = $this->addStatusStatement( $query, $params );
         $query = $this->addOrderByStatement( $query, $params );
 
         $query->paginate( $params[ 'perPage' ] );
 
-        $result = $query->get();
-
-        if ( $result->isEmpty() ) {
-
-            throw new HttpResponseException( response()->json( [ 'message' => 'No results found.' ], 204 ) );
-
-        }
-
-        return $result;
+        return $query->get();
 
     }
 
     /**
      * Add status conditions to query
      *
-     * @param $query
-     * @param $params
-     * @return mixed
+     * @param Builder $query
+     * @param array $params
+     * @return Builder
      */
-    protected function addStatusStatement( $query, $params )
+    public function addStatusStatement( Builder $query, array $params ) : Builder
     {
 
         if ( !empty( $params[ 'withClosed' ] ) ) {
 
-            $query->where( 'status', TaskStatus::OPEN )
-                ->orWhere( 'status', TaskStatus::BLOCK )
-                ->orWhere( 'status', TaskStatus::CLOSE );
+            $query->whereIn( 'status', TaskStatus::getValues() );
 
         } else if ( !empty( $params[ 'onlyClosed' ] ) ) {
 
@@ -157,8 +146,7 @@ class Task extends SearchableModel
 
         } else {
 
-            $query->where( 'status', TaskStatus::OPEN )
-                ->orWhere( 'status', TaskStatus::BLOCK );
+            $query->whereIn( 'status', [ TaskStatus::OPEN, TaskStatus::BLOCK ] );
 
         }
 
