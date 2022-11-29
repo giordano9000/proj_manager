@@ -19,9 +19,9 @@ Di seguito alcune lib usate:
 
 I feature test si trovano nelle dir:
 <ul>
-    <li>test/auth</li>
-    <li>test/projects</li>
-    <li>test/tasks</li>
+    <li>tests/auth</li>
+    <li>tests/projects</li>
+    <li>tests/tasks</li>
 </ul>
 
 Il file <code>postman_collection.json</code> contiene la lista delle chiamate a disposizione.
