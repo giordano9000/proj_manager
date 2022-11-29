@@ -36,10 +36,10 @@ class TasksShowTest extends TestCase
     {
 
         $token = $this->get_token();
-        $projectId = Project::inRandomOrder()->first();
+        $project = Project::inRandomOrder()->whereHas('tasks')->first();
+        $task = $project->tasks()->first();
 
-        $slug = Project::find($projectId)->first()->slug;
-        $response = $this->getJson( 'api/projects/' . $slug, $this->get_auth_header($token) );
+        $response = $this->getJson( 'api/projects/' . $project->slug . '/tasks/' . $task->slug, $this->get_auth_header($token) );
         $response->assertStatus( 200 );
 
     }
@@ -48,17 +48,20 @@ class TasksShowTest extends TestCase
     {
 
         $token = $this->get_token();
-        $projectId = Project::inRandomOrder()->first();
+        $project = Project::inRandomOrder()->first();
 
-        $response = $this->getJson( 'api/projects', $this->get_auth_header($token) );
-        $response->assertStatus( 422 );
+        $response = $this->getJson( 'api/projects/' . $project->id . '/tasks/invalid_task_id', $this->get_auth_header($token) );
+        $response->assertStatus( 404 );
 
     }
 
     public function test_need_token()
     {
 
-        $response = $this->getJson( 'api/projects');
+        $project = Project::inRandomOrder()->whereHas('tasks')->first();
+        $task = $project->tasks()->first();
+
+        $response = $this->getJson( 'api/projects/' . $project->id . '/tasks/' . $task->id);
         $response->assertStatus( 401 );
 
     }

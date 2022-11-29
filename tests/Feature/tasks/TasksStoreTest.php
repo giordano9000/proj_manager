@@ -2,7 +2,12 @@
 
 namespace Tests\Feature\projects;
 
+use App\Enums\Status;
+use App\Enums\TaskPriority;
+use App\Enums\TaskStatus;
 use App\Models\Project;
+use App\Models\Task;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -14,24 +19,30 @@ class TasksStoreTest extends TestCase
     {
 
         $token = $this->get_token();
+        $project = Project::inRandomOrder()->where( 'status', Status::OPEN )->first();
+        $difficulties = [ 1, 2, 3, 5, 8, 13, 21 ];
 
         $data = [
-            'title' => fake()->city,
-            'description' => fake()->text,
+            "title" => fake()->country,
+            "description" => fake()->text,
+            "assignee" => User::inRandomOrder()->first()->id,
+            "difficulty" => $difficulties[ array_rand( $difficulties ) ],
+            "priority" => TaskPriority::getRandomValue()
         ];
-
-        $response = $this->postJson( 'api/projects', $data, $this->get_auth_header( $token ) );
+        $response = $this->postJson( 'api/projects/' . $project->id . '/tasks', $data, $this->get_auth_header( $token ) );
 
         $response->assertJsonStructure( [
-            'slug',
-            'status',
+            'id',
             'title',
             'description',
-            'id',
+            'assignee',
+            'difficulty',
+            'priority',
+            'slug'
         ] );
-        $this->assertDatabaseHas( 'projects', [ 'title' => $data[ 'title' ] ] );
+        $this->assertDatabaseHas( 'tasks', [ 'title' => $data[ 'title' ] ] );
 
-        Project::where( 'title', $data[ 'title' ] )->delete();
+        Task::where( 'title', $data[ 'title' ] )->delete();
 
     }
 
@@ -39,16 +50,20 @@ class TasksStoreTest extends TestCase
     {
 
         $token = $this->get_token();
+        $project = Project::inRandomOrder()->where( 'status', Status::OPEN )->first();
+        $difficulties = [ 1, 2, 3, 5, 8, 13, 21 ];
 
         $data = [
-            'title' => fake()->city,
-            'description' => fake()->text,
+            "title" => fake()->country,
+            "description" => fake()->text,
+            "assignee" => User::inRandomOrder()->first()->id,
+            "difficulty" => $difficulties[ array_rand( $difficulties ) ],
+            "priority" => TaskPriority::getRandomValue()
         ];
+        $this->postJson( 'api/projects/' . $project->id . '/tasks', $data, $this->get_auth_header( $token ) );
+        $response = $this->postJson( 'api/projects/' . $project->id . '/tasks', $data, $this->get_auth_header( $token ) );
 
-        $this->postJson( 'api/projects', $data, $this->get_auth_header( $token ) );
-        $response = $this->postJson( 'api/projects', $data, $this->get_auth_header( $token ) );
-
-        $response->assertStatus(422);
+        $response->assertStatus( 422 );
 
     }
 
@@ -56,13 +71,14 @@ class TasksStoreTest extends TestCase
     {
 
         $token = $this->get_token();
+        $project = Project::inRandomOrder()->where( 'status', Status::OPEN )->first();
 
         $data = [
             'title' => null,
             'description' => '',
         ];
 
-        $response = $this->postJson( 'api/projects', $data, $this->get_auth_header( $token ) );
+        $response = $this->postJson( 'api/projects/' . $project->id . '/tasks', $data, $this->get_auth_header( $token ) );
 
         $response->assertStatus( 422 );
 
@@ -71,7 +87,9 @@ class TasksStoreTest extends TestCase
     public function test_need_token()
     {
 
-        $response = $this->getJson( 'api/projects');
+        $project = Project::inRandomOrder()->where( 'status', Status::OPEN )->first();
+
+        $response = $this->getJson( 'api/projects/' . $project->id . '/tasks' );
         $response->assertStatus( 401 );
 
     }
