@@ -19,12 +19,7 @@ class ProjectsSeeder extends Seeder
     {
 
         DB::table('projects')->delete();
-
         \App\Models\Project::factory(10)->create();
-
-        DB::table('projects')->update([
-            'slug' => DB::raw("CONCAT(id, '-', title)")
-        ]);
 
         $this->command->info('Projects table seeded!');
 

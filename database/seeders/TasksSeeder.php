@@ -19,12 +19,7 @@ class TasksSeeder extends Seeder
     {
 
         DB::table('tasks')->delete();
-
         \App\Models\Task::factory(70)->create();
-
-        DB::table('tasks')->update([
-            'slug' => DB::raw("CONCAT(id, '-', title)")
-        ]);
 
         $this->command->info('Tasks table seeded!');
     }

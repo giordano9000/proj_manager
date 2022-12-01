@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\ItemNotFoundException;
+use DB;
 
 class Task extends SearchableModel
 {
@@ -32,8 +33,14 @@ class Task extends SearchableModel
      * @var string[]
      */
     public $attributes = [
-        'status' => 'open',
-        'slug' => '',
+        'status' => 'open'
+    ];
+
+    /**
+     * @var string[]
+     */
+    protected $appends = [
+        'slug'
     ];
 
     /**
@@ -43,7 +50,6 @@ class Task extends SearchableModel
         'title',
         'description',
         'status',
-        'slug',
         'assignee',
         'difficulty',
         'priority',
@@ -68,11 +74,11 @@ class Task extends SearchableModel
     ];
 
     /**
-     * Set slug attribute
+     * @return string
      */
-    public function setSlugAttribute() : void
+    public function getSlugAttribute()
     {
-        $this->attributes[ 'slug' ] = $this->id . '-' . $this->title;
+        return $this->id . '-' . $this->title;
     }
 
     /**
@@ -97,7 +103,7 @@ class Task extends SearchableModel
         $query = $this->query();
 
         $query->where( 'id', $id )
-            ->orWhere( 'slug', $id );
+            ->orWhere( DB::raw("CONCAT(`id`, '-', `title`)"), 'LIKE', $id );
 
         return $query->first();
 
@@ -114,7 +120,7 @@ class Task extends SearchableModel
     {
 
         $query = $this->newQuery();
-        $query->select( 'id', 'title', 'description', 'slug', 'assignee', 'difficulty', 'priority', 'status' );
+        $query->select( 'id', 'title', 'description', 'assignee', 'difficulty', 'priority', 'status' );
         $query->where( 'project_id', $projectId );
 
         $query = $this->addStatusStatement( $query, $params );

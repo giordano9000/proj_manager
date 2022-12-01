@@ -12,6 +12,7 @@ use App\Models\Traits\Uuid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\ItemNotFoundException;
+use DB;
 
 class Project extends SearchableModel
 {
@@ -28,18 +29,32 @@ class Project extends SearchableModel
      */
     public $incrementing = false;
 
+    /**
+     * @var array
+     */
     protected $attributes = [
-        'slug' => '',
         'status' => Status::OPEN
     ];
 
+    /**
+     * @var string[]
+     */
+    protected $appends = [
+        'slug'
+    ];
+
+    /**
+     * @var string[]
+     */
     protected $fillable = [
         'title',
         'description',
-        'slug',
         'status'
     ];
 
+    /**
+     * @var string[]
+     */
     protected $hidden = [
         'updated_at',
         'created_at'
@@ -55,13 +70,11 @@ class Project extends SearchableModel
     ];
 
     /**
-     * Set slug attribute
-     *
-     * @return mixed
+     * @return string
      */
-    public function setSlugAttribute()
+    public function getSlugAttribute()
     {
-        $this->attributes['slug'] = $this->id . '-' . $this->title;
+        return $this->id . '-' . $this->title;
     }
 
     /**
@@ -132,7 +145,7 @@ class Project extends SearchableModel
         $query = $this->query();
 
         $query->where( 'id', $id )
-            ->orWhere( 'slug', $id );
+            ->orWhere( DB::raw("CONCAT(`id`, '-', `title`)"), 'LIKE', $id );
 
         $query = $this->addOpenTaskCounter( $query );
         $query = $this->addClosedTaskCounter( $query );

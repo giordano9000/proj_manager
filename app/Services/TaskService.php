@@ -73,7 +73,6 @@ class TaskService
             'project_id' => $projectId
         ] );
 
-        $task->setSlugAttribute();
         $task->save();
 
         return $task->only( 'id', 'title', 'description', 'assignee', 'difficulty', 'priority', 'slug' );
@@ -99,7 +98,6 @@ class TaskService
         $task->difficulty = $params[ 'difficulty' ];
         $task->priority = $params[ 'priority' ];
 
-        $task->setSlugAttribute();
         $task->save();
 
         return $task->only( 'id', 'title', 'description', 'slug', 'assignee', 'difficulty', 'priority', 'status' );

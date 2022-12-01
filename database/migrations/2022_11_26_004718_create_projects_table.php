@@ -21,7 +21,6 @@ return new class extends Migration
             $table->uuid('id')->nullable(false);
             $table->string('title')->nullable(false);
             $table->text('description')->nullable();
-            $table->string('slug')->nullable(false);
             $table->enum( 'status', Status::getValues() )->default( Status::OPEN );
 
             $table->timestamps();

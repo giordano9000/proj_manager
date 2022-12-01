@@ -52,7 +52,6 @@ class ProjectService
             'description' => $params[ 'description' ]
         ] );
 
-        $project->setSlugAttribute();
         $project->save();
 
         return $project;
@@ -72,7 +71,7 @@ class ProjectService
         $project = $this->projectModel->searchById( $id );
         $project->title = $params[ 'title' ];
         $project->description = $params[ 'description' ];
-        $project->setSlugAttribute();
+
         $project->save();
 
         return $project;
