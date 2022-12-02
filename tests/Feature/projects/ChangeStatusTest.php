@@ -14,6 +14,23 @@ use Illuminate\Database\Eloquent\Builder;
 class ChangeStatusTest extends TestCase
 {
 
+    public function test_valid_request()
+    {
+
+        $token = $this->get_token();
+        $data = [
+            'title' => fake()->city,
+            'description' => fake()->text,
+        ];
+        $response = $this->postJson( 'api/projects', $data, $this->get_auth_header( $token ) );
+
+        $project = Project::find( $response->json('id') )->first();
+
+        $response = $this->patchJson( 'api/projects/' . $project->id . '/close', [], $this->get_auth_header( $token ) );
+        $response->assertStatus( 204 );
+
+    }
+
     public function test_invalid_change()
     {
 

@@ -15,21 +15,14 @@ class UpdateTest extends TestCase
 
         $token = $this->get_token();
         $project = Project::inRandomOrder()->first();
-
-        $projectId = $project->id;
-        $beforeTitle = $project->title;
-        $beforeDescription = $project->description;
-
         $data = [
             'title' => fake()->city,
             'description' => fake()->text,
         ];
 
-        $response = $this->patchJson( 'api/projects/' . $projectId, $data, $this->get_auth_header( $token ) );
+        $response = $this->patchJson( 'api/projects/' . $project->id, $data, $this->get_auth_header( $token ) );
 
-        $updatedProject = Project::find($projectId)->first();
-        $afterTitle = $updatedProject->title;
-        $afterDescription = $updatedProject->description;
+        $updatedProject = Project::find($project->id)->first();
 
         $response->assertJsonStructure( [
             'id',
@@ -41,8 +34,7 @@ class UpdateTest extends TestCase
             'closed_tasks',
         ] );
         $response->assertStatus( 200 );
-        $this->assertNotEquals( $beforeTitle, $afterTitle );
-        $this->assertNotEquals( $beforeDescription, $afterDescription );
+        $this->assertNotEquals( $project, $updatedProject );
 
     }
 

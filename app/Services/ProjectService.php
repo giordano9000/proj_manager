@@ -90,13 +90,13 @@ class ProjectService
 
         $project = $this->projectModel->searchById( $id );
 
-        if ( $newStatus === Status::OPEN && $project->status === Status::OPEN ) {
+        if ( $newStatus == $project->status ) {
 
             return true;
 
         }
 
-        if ( $newStatus === Status::CLOSE && $project->unclosedTasks()->get()->isEmpty() ) {
+        if ( $newStatus == Status::CLOSE && !$project->unclosedTasks()->isEmpty() ) {
 
             $project->update([
                 'status' => Status::CLOSE
