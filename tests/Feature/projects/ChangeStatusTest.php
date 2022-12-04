@@ -18,13 +18,9 @@ class ChangeStatusTest extends TestCase
     {
 
         $token = $this->get_token();
-        $data = [
-            'title' => fake()->city,
-            'description' => fake()->text,
-        ];
-        $response = $this->postJson( 'api/projects', $data, $this->get_auth_header( $token ) );
-
-        $project = Project::find( $response->json('id') )->first();
+        $project = Project::where('status', Status::OPEN)
+            ->doesntHave('unclosedTasks')
+            ->first();
 
         $response = $this->patchJson( 'api/projects/' . $project->id . '/close', [], $this->get_auth_header( $token ) );
         $response->assertStatus( 204 );

@@ -85,7 +85,7 @@ class ProjectService
      * @param $newStatus
      * @return bool
      */
-    public function changeStatus( $id, $newStatus )
+    public function changeStatus( $id, $newStatus ): bool
     {
 
         $project = $this->projectModel->searchById( $id );
@@ -96,7 +96,7 @@ class ProjectService
 
         }
 
-        if ( $newStatus == Status::CLOSE && !$project->unclosedTasks()->isEmpty() ) {
+        if ( $newStatus == Status::CLOSE && $project->unclosedTasks()->get()->isEmpty() ) {
 
             $project->update([
                 'status' => Status::CLOSE
@@ -111,7 +111,7 @@ class ProjectService
     }
 
     /**
-     * Check the project exists and return it
+     * Check the project exists
      *
      * @param string $projectId
      * @return mixed
@@ -121,9 +121,9 @@ class ProjectService
 
         $project = $this->projectModel->searchById( $projectId );
 
-        if ( empty( $project ) ) {
+        if ( !$project ) {
 
-            throw new HttpResponseException( response()->json( [ 'message' => 'Project not found.' ], 404 ) );
+            return false;
 
         }
 
@@ -132,8 +132,7 @@ class ProjectService
     }
 
     /**
-     * Check the project exists and could be modified.
-     * Return the project
+     * Check the project exists and can be modified.
      *
      * @param $projectId
      * @return mixed
@@ -143,9 +142,9 @@ class ProjectService
 
         $project = $this->isValid( $projectId );
 
-        if ( $project->status === Status::CLOSE ) {
+        if ( $project && $project->status === Status::CLOSE ) {
 
-            throw new HttpResponseException( response()->json( [ 'message' => 'Project is closed.' ], 400 ) );
+            return false;
 
         }
 

@@ -28,7 +28,7 @@ class TaskUpdateTest extends TestCase
             ->first();
 
         $data = [
-            'title' => fake()->city,
+            'title' => fake()->password,
             'description' => fake()->text,
             'status' => TaskStatus::getRandomValue(),
             'assignee' => User::inRandomOrder()->first()->id,

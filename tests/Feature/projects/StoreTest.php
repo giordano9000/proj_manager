@@ -16,7 +16,7 @@ class StoreTest extends TestCase
         $token = $this->get_token();
 
         $data = [
-            'title' => fake()->city,
+            'title' => fake()->password,
             'description' => fake()->text,
         ];
 
@@ -41,7 +41,7 @@ class StoreTest extends TestCase
         $token = $this->get_token();
 
         $data = [
-            'title' => fake()->city,
+            'title' => fake()->password,
             'description' => fake()->text,
         ];
 

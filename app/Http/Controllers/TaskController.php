@@ -8,6 +8,7 @@ use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Services\TaskService;
 use App\Services\ProjectService;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
@@ -38,7 +39,13 @@ class TaskController extends Controller
     {
 
         $params = $request->validated();
-        $this->projectService->isValid( $projectId );
+
+        if ( !$this->projectService->isValid( $projectId ) ) {
+
+            return response()->json( [ 'message' => 'Task not found.' ], 404 );
+
+        }
+
         $projects = $this->taskService->search( $projectId, $params );
 
         return response()->json( $projects );
@@ -55,7 +62,13 @@ class TaskController extends Controller
     {
 
         $params = $request->validated();
-        $this->projectService->isModifiable( $projectId );
+
+        if ( !$this->projectService->isModifiable( $projectId ) ) {
+
+            return response()->json( [ 'message' => 'Project is closed.' ], 400 );
+
+        }
+
         $project = $this->taskService->store( $projectId, $params );
 
         return response()->json( $project );
@@ -71,10 +84,19 @@ class TaskController extends Controller
     public function show( string $projectId, string $taskId )
     {
 
-        $this->projectService->isValid( $projectId );
-        $this->taskService->isValid( $taskId );
+        if ( !$this->projectService->isValid( $projectId ) ) {
 
-        $task = $this->taskService->searchById( $projectId, $taskId );
+            return response()->json( [ 'message' => 'Project not found.' ], 404 );
+
+        }
+
+        if ( !$this->taskService->isValid( $taskId, $projectId ) ) {
+
+            return response()->json( [ 'message' => 'Task not found.' ], 404 );
+
+        }
+
+        $task = $this->taskService->searchById( $taskId );
 
         return response()->json( $task );
 
@@ -91,8 +113,18 @@ class TaskController extends Controller
     {
 
         $params = $request->validated();
-        $this->projectService->isModifiable( $projectId );
-        $this->taskService->isValid( $taskId );
+
+        if ( !$this->projectService->isModifiable( $projectId ) ) {
+
+            return response()->json( [ 'message' => 'Project is closed.' ], 400 );
+
+        }
+
+        if ( !$this->taskService->isValid( $taskId, $projectId ) ) {
+
+            return response()->json( [ 'message' => 'Task not found.' ], 404 );
+
+        }
 
         $project = $this->taskService->update( $taskId, $params );
 
@@ -110,8 +142,17 @@ class TaskController extends Controller
     public function changeStatus( string $projectId, string $taskId, string $status )
     {
 
-        $this->projectService->isModifiable( $projectId );
-        $this->taskService->isValid( $taskId );
+        if ( !$this->projectService->isModifiable( $projectId ) ) {
+
+            return response()->json( [ 'message' => 'Project is closed.' ], 400 );
+
+        }
+
+        if ( !$this->taskService->isValid( $taskId, $projectId ) ) {
+
+            return response()->json( [ 'message' => 'Task not found.' ], 404 );
+
+        }
 
         if ( !in_array( $status, TaskStatus::getValues() ) ) {
 

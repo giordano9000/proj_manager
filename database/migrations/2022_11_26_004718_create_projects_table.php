@@ -19,7 +19,7 @@ return new class extends Migration
         Schema::create('projects', function (Blueprint $table) {
 
             $table->uuid('id')->nullable(false);
-            $table->string('title')->nullable(false);
+            $table->string('title')->unique()->nullable(false);
             $table->text('description')->nullable();
             $table->enum( 'status', Status::getValues() )->default( Status::OPEN );
 

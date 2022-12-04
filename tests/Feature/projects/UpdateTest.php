@@ -16,7 +16,7 @@ class UpdateTest extends TestCase
         $token = $this->get_token();
         $project = Project::inRandomOrder()->first();
         $data = [
-            'title' => fake()->city,
+            'title' => fake()->address,
             'description' => fake()->text,
         ];
 

@@ -19,7 +19,7 @@ return new class extends Migration {
         Schema::create( 'tasks', function ( Blueprint $table ) {
 
             $table->uuid( 'id' )->nullable(false);
-            $table->string( 'title' )->nullable( false );
+            $table->string( 'title' )->unique()->nullable( false );
             $table->text( 'description' );
             $table->smallInteger( 'difficulty' );
             $table->enum( 'status', TaskStatus::getValues() )->default( TaskStatus::OPEN );

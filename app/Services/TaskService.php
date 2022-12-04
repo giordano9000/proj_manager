@@ -30,10 +30,8 @@ class TaskService
      * @param $params
      * @return \Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection
      */
-    public function searchById( string $projectId, string $taskId ): array
+    public function searchById( string $taskId ): array
     {
-
-        $this->projectModel->searchById( $projectId );
 
         $task = $this->taskModel->searchById( $taskId );
 
@@ -125,14 +123,14 @@ class TaskService
      * @param string $taskId
      * @return mixed
      */
-    public function isValid( string $taskId ): mixed
+    public function isValid( string $taskId, string $projectId ): mixed
     {
 
-        $task = $this->taskModel->searchById( $taskId );
+        $task = $this->taskModel->searchById( $taskId, $projectId );
 
-        if ( empty( $task ) ) {
+        if ( !$task ) {
 
-            throw new HttpResponseException( response()->json( [ 'message' => 'Task not found.' ], 404 ) );
+            return false;
 
         }
 

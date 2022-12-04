@@ -23,7 +23,7 @@ class TasksStoreTest extends TestCase
         $difficulties = [ 1, 2, 3, 5, 8, 13, 21 ];
 
         $data = [
-            "title" => fake()->country,
+            "title" => fake()->password,
             "description" => fake()->text,
             "assignee" => User::inRandomOrder()->first()->id,
             "difficulty" => $difficulties[ array_rand( $difficulties ) ],
@@ -54,7 +54,7 @@ class TasksStoreTest extends TestCase
         $difficulties = [ 1, 2, 3, 5, 8, 13, 21 ];
 
         $data = [
-            "title" => fake()->country,
+            "title" => fake()->password,
             "description" => fake()->text,
             "assignee" => User::inRandomOrder()->first()->id,
             "difficulty" => $difficulties[ array_rand( $difficulties ) ],
