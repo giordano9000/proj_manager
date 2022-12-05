@@ -21,10 +21,12 @@ class TaskFactory extends Factory
     public function definition()
     {
 
+        $difficulties = [ 1, 2, 3, 5, 8, 13, 21 ];
+
         return [
-            'title' => fake()->city(),
+            'title' => fake()->unique()->address,
             'description' => fake()->text,
-            'difficulty' => array_rand( [ 1, 2, 3, 5, 8, 13, 21 ] ),
+            'difficulty' => $difficulties[ array_rand( $difficulties ) ],
             'status' => TaskStatus::getRandomValue(),
             'priority' => TaskPriority::getRandomValue(),
             'assignee' => User::select('id')->inRandomOrder()->first(),

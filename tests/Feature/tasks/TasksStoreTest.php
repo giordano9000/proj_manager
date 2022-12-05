@@ -15,21 +15,21 @@ use Tests\TestCase;
 class TasksStoreTest extends TestCase
 {
 
+    use RefreshDatabase;
+
     public function test_project_creation()
     {
 
         $token = $this->get_token();
-        $project = Project::inRandomOrder()->where( 'status', Status::OPEN )->first();
-        $difficulties = [ 1, 2, 3, 5, 8, 13, 21 ];
+        $project = Project::factory()
+            ->set( 'status', Status::OPEN )
+            ->create();
+        $taskData = Task::factory()
+            ->for($project)
+            ->makeOne()
+            ->only('title', 'description', 'assignee', 'difficulty', 'priority');
 
-        $data = [
-            "title" => fake()->password,
-            "description" => fake()->text,
-            "assignee" => User::inRandomOrder()->first()->id,
-            "difficulty" => $difficulties[ array_rand( $difficulties ) ],
-            "priority" => TaskPriority::getRandomValue()
-        ];
-        $response = $this->postJson( 'api/projects/' . $project->id . '/tasks', $data, $this->get_auth_header( $token ) );
+        $response = $this->postJson( 'api/projects/' . $project->id . '/tasks', $taskData, $this->get_auth_header( $token ) );
 
         $response->assertJsonStructure( [
             'id',
@@ -40,9 +40,7 @@ class TasksStoreTest extends TestCase
             'priority',
             'slug'
         ] );
-        $this->assertDatabaseHas( 'tasks', [ 'title' => $data[ 'title' ] ] );
-
-        Task::where( 'title', $data[ 'title' ] )->delete();
+        $this->assertDatabaseHas( 'tasks', [ 'title' => $taskData[ 'title' ] ] );
 
     }
 
@@ -50,18 +48,15 @@ class TasksStoreTest extends TestCase
     {
 
         $token = $this->get_token();
-        $project = Project::inRandomOrder()->where( 'status', Status::OPEN )->first();
-        $difficulties = [ 1, 2, 3, 5, 8, 13, 21 ];
+        $project = Project::factory()
+            ->set( 'status', Status::OPEN )
+            ->create();
+        $taskData = Task::factory()
+            ->for($project)
+            ->create()
+            ->only('title', 'description', 'assignee', 'difficulty', 'priority');
 
-        $data = [
-            "title" => fake()->password,
-            "description" => fake()->text,
-            "assignee" => User::inRandomOrder()->first()->id,
-            "difficulty" => $difficulties[ array_rand( $difficulties ) ],
-            "priority" => TaskPriority::getRandomValue()
-        ];
-        $this->postJson( 'api/projects/' . $project->id . '/tasks', $data, $this->get_auth_header( $token ) );
-        $response = $this->postJson( 'api/projects/' . $project->id . '/tasks', $data, $this->get_auth_header( $token ) );
+        $response = $this->postJson( 'api/projects/' . $project->id . '/tasks', $taskData, $this->get_auth_header( $token ) );
 
         $response->assertStatus( 422 );
 
@@ -71,7 +66,7 @@ class TasksStoreTest extends TestCase
     {
 
         $token = $this->get_token();
-        $project = Project::inRandomOrder()->where( 'status', Status::OPEN )->first();
+        $project = Project::factory()->create();
 
         $data = [
             'title' => null,
@@ -87,8 +82,7 @@ class TasksStoreTest extends TestCase
     public function test_need_token()
     {
 
-        $project = Project::inRandomOrder()->where( 'status', Status::OPEN )->first();
-
+        $project = Project::factory()->create();
         $response = $this->getJson( 'api/projects/' . $project->id . '/tasks' );
         $response->assertStatus( 401 );
 

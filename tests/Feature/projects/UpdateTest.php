@@ -10,6 +10,8 @@ use Tests\TestCase;
 class UpdateTest extends TestCase
 {
 
+    use RefreshDatabase;
+
     public function test_project_update()
     {
 

@@ -15,15 +15,17 @@ use Tests\TestCase;
 class TaskChangeStatusTest extends TestCase
 {
 
+    use RefreshDatabase;
+
     public function test_valid_request()
     {
 
         $token = $this->get_token();
-        $task = Task::where('status', TaskStatus::OPEN)
-            ->whereHas('project', function ( $builder ) {
-                $builder->where('status', Status::OPEN);
-            })
-            ->first();
+        $task = Task::factory()
+            ->set( 'status', Status::OPEN )
+            ->for( Project::factory()
+                ->set( 'status', TaskStatus::OPEN ) )
+            ->create();
 
         $response = $this->patchJson( 'api/projects/' . $task->project_id . '/tasks/' . $task->id . '/close', [], $this->get_auth_header( $token ) );
 
@@ -35,13 +37,13 @@ class TaskChangeStatusTest extends TestCase
     {
 
         $token = $this->get_token();
-        $project = Project::where( 'status', Status::CLOSE )
-            ->whereHas('tasks')
-            ->with('tasks')
-            ->inRandomOrder()
-            ->first();
+        $project = Project::factory()
+            ->set( 'status', Status::CLOSE)
+            ->has( Task::factory( 3 )
+                ->set( 'status', TaskStatus::CLOSE ) )
+            ->create();
 
-        $response = $this->patchJson( 'api/projects/' . $project->id . '/tasks/' . $project->tasks->first()->id . '/open', [], $this->get_auth_header( $token ) );
+        $response = $this->patchJson( 'api/projects/' . $project->id . '/tasks/' . $project->tasks()->first()->id . '/open', [], $this->get_auth_header( $token ) );
 
         $response->assertStatus( 400 );
 

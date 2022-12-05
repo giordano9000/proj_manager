@@ -6,10 +6,13 @@ use App\Enums\ProjectSort;
 use App\Enums\Status;
 use App\Models\Project;
 use App\Services\ProjectService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ProjectServiceSearchTest extends TestCase
 {
+
+    use RefreshDatabase;
 
     public function test_searchById()
     {

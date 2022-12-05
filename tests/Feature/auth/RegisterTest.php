@@ -9,16 +9,14 @@ use App\Models\User;
 
 class RegisterTest extends TestCase
 {
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
+
+    use RefreshDatabase;
+
     public function test_registration()
     {
 
         $data = [
-            'name' => fake()->name,
+            'name' => fake()->password,
             'email' => fake()->email,
         ];
 
@@ -32,15 +30,8 @@ class RegisterTest extends TestCase
 
         $this->assertDatabaseHas( 'users', [ 'name' => $data['name'], 'email' => $data['email'] ] );
 
-        User::where('email', $data['email'])->delete();
-
     }
 
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
     public function test_user_exists()
     {
 
@@ -59,8 +50,6 @@ class RegisterTest extends TestCase
         );
 
         $response->assertStatus(422);
-
-
 
     }
 

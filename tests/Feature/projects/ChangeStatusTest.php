@@ -7,20 +7,23 @@ use App\Enums\TaskStatus;
 use App\Models\Project;
 use App\Models\Task;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
-use Illuminate\Database\Eloquent\Builder;
 
 class ChangeStatusTest extends TestCase
 {
+
+    use RefreshDatabase;
 
     public function test_valid_request()
     {
 
         $token = $this->get_token();
-        $project = Project::where('status', Status::OPEN)
-            ->doesntHave('unclosedTasks')
-            ->first();
+
+        $project = Project::factory()
+            ->set( 'status', Status::OPEN )
+            ->has( Task::factory( 3 )
+                ->set( 'status', TaskStatus::CLOSE ) )
+            ->create();
 
         $response = $this->patchJson( 'api/projects/' . $project->id . '/close', [], $this->get_auth_header( $token ) );
         $response->assertStatus( 204 );
@@ -31,7 +34,10 @@ class ChangeStatusTest extends TestCase
     {
 
         $token = $this->get_token();
-        $project = Project::where( 'status', Status::CLOSE )->inRandomOrder()->first();
+
+        $project = Project::factory()
+            ->set( 'status', Status::CLOSE )
+            ->create();
 
         $response = $this->patchJson( 'api/projects/' . $project->id . '/open', [], $this->get_auth_header( $token ) );
 
@@ -43,7 +49,7 @@ class ChangeStatusTest extends TestCase
     {
 
         $token = $this->get_token();
-        $project = Project::inRandomOrder()->first();
+        $project = Project::factory()->create();
 
         $response = $this->patchJson( 'api/projects/' . $project->id . '/invalid', [], $this->get_auth_header( $token ) );
 
@@ -54,7 +60,7 @@ class ChangeStatusTest extends TestCase
     public function test_need_token()
     {
 
-        $project = Project::inRandomOrder()->first();
+        $project = Project::factory()->create();
         $response = $this->patchJson( 'api/projects/' . $project->id . '/close', [] );
         $response->assertStatus( 401 );
 

@@ -10,6 +10,8 @@ use Tests\TestCase;
 class ShowTest extends TestCase
 {
 
+    use RefreshDatabase;
+
     public function test_valid_request()
     {
 
@@ -43,14 +45,13 @@ class ShowTest extends TestCase
 
     }
 
-    public function test_invalid_request()
+    public function test_invalid_project_id()
     {
 
         $token = $this->get_token();
-        $projectId = Project::inRandomOrder()->first();
 
-        $response = $this->getJson( 'api/projects', $this->get_auth_header($token) );
-        $response->assertStatus( 422 );
+        $response = $this->getJson( 'api/projects/' . fake()->address(), $this->get_auth_header($token) );
+        $response->assertStatus( 404 );
 
     }
 

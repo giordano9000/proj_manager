@@ -5,10 +5,13 @@ namespace Tests\Unit\services\tasks;
 use App\Enums\Status;
 use App\Models\Task;
 use App\Services\TaskService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class TaskServiceCheckTest extends TestCase
 {
+
+    use RefreshDatabase;
 
     public function test_valid_task_id()
     {

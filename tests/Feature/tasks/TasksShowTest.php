@@ -2,7 +2,9 @@
 
 namespace Tests\Feature\projects;
 
+use App\Enums\Status;
 use App\Models\Project;
+use App\Models\Task;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -10,11 +12,15 @@ use Tests\TestCase;
 class TasksShowTest extends TestCase
 {
 
+    use RefreshDatabase;
+
     public function test_valid_request()
     {
 
         $token = $this->get_token();
-        $project = Project::inRandomOrder()->whereHas('tasks')->first();
+        $project = Project::factory()
+            ->has( Task::factory( 3 ))
+            ->create();
         $task = $project->tasks()->first();
 
         $response = $this->getJson( 'api/projects/' . $project->id . '/tasks/' . $task->id, $this->get_auth_header($token) );
@@ -36,9 +42,10 @@ class TasksShowTest extends TestCase
     {
 
         $token = $this->get_token();
-        $project = Project::inRandomOrder()->whereHas('tasks')->first();
+        $project = $project = Project::factory()
+            ->has( Task::factory( 3 ))
+            ->create();
         $task = $project->tasks()->first();
-
         $response = $this->getJson( 'api/projects/' . $project->slug . '/tasks/' . $task->slug, $this->get_auth_header($token) );
         $response->assertStatus( 200 );
 
@@ -48,7 +55,7 @@ class TasksShowTest extends TestCase
     {
 
         $token = $this->get_token();
-        $project = Project::inRandomOrder()->first();
+        $project = Project::factory()->create();
 
         $response = $this->getJson( 'api/projects/' . $project->id . '/tasks/invalid_task_id', $this->get_auth_header($token) );
         $response->assertStatus( 404 );
@@ -58,10 +65,11 @@ class TasksShowTest extends TestCase
     public function test_need_token()
     {
 
-        $project = Project::inRandomOrder()->whereHas('tasks')->first();
-        $task = $project->tasks()->first();
+        $project = Project::factory()
+            ->has( Task::factory( 3 ))
+            ->create();
 
-        $response = $this->getJson( 'api/projects/' . $project->id . '/tasks/' . $task->id);
+        $response = $this->getJson( 'api/projects/' . $project->id . '/tasks/' . $project->tasks()->first()->id);
         $response->assertStatus( 401 );
 
     }

@@ -6,24 +6,25 @@ use App\Enums\Status;
 use App\Enums\TaskPriority;
 use App\Models\User;
 use App\Services\TaskService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\Project;
+use App\Models\Task;
 
 class TaskServiceStoreTest extends TestCase
 {
 
-    public function test_store_new_project()
+    use RefreshDatabase;
+
+    public function test_store_new_task()
     {
 
-        $project = Project::where('status', Status::OPEN)->first();
-        $difficulties = [ 1, 2, 3, 5, 8, 13, 21 ];
-        $data = [
-            "title" => fake()->password,
-            "description" => fake()->text,
-            "assignee" => User::inRandomOrder()->first()->id,
-            "difficulty" => $difficulties[ array_rand( $difficulties ) ],
-            "priority" => TaskPriority::getRandomValue()
-        ];
+        $project = Project::factory()
+            ->set('status', Status::OPEN)
+            ->create();
+        $data = Task::factory()
+            ->makeOne()
+            ->only('title', 'description', 'assignee', 'difficulty', 'priority');
         $service = new TaskService();
         $service->store( $project->id, $data );
 

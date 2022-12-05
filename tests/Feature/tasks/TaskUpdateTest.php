@@ -5,6 +5,7 @@ namespace Tests\Feature\projects;
 use App\Enums\Status;
 use App\Enums\TaskPriority;
 use App\Enums\TaskStatus;
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,30 +16,23 @@ use Tests\TestCase;
 class TaskUpdateTest extends TestCase
 {
 
+    use RefreshDatabase;
+
     public function test_task_update()
     {
 
         $token = $this->get_token();
-        $difficulties = [ 1, 2, 3, 5, 8, 13, 21 ];
-        $task = Task::inRandomOrder()
-            ->with('project')
-            ->whereHas( 'project', function ( $query ) {
-                $query->whereNot( 'status', Status::CLOSE );
-            } )
-            ->first();
+        $task = Task::factory()
+            ->for( Project::factory()->set('status', Status::OPEN))
+            ->create();
 
-        $data = [
-            'title' => fake()->password,
-            'description' => fake()->text,
-            'status' => TaskStatus::getRandomValue(),
-            'assignee' => User::inRandomOrder()->first()->id,
-            'difficulty' => $difficulties[ array_rand( $difficulties ) ],
-            'priority' => TaskPriority::getRandomValue()
-        ];
+        $newData = Task::factory()
+            ->makeOne()
+            ->only('title', 'description', 'assignee', 'difficulty', 'priority');
 
-        $response = $this->patchJson( 'api/projects/' . $task->project->id . '/tasks/' . $task->id, $data, $this->get_auth_header( $token ) );
+        $response = $this->patchJson( 'api/projects/' . $task->project_id . '/tasks/' . $task->id, $newData, $this->get_auth_header( $token ) );
 
-        $updatedtask = Task::find( $task->id )->first();
+        $updatedtask = Task::find( $task->id );
 
         $response->assertJsonStructure( [
             'id',
@@ -59,25 +53,20 @@ class TaskUpdateTest extends TestCase
     {
 
         $token = $this->get_token();
-        $difficulties = [ 1, 2, 3, 5, 8, 13, 21 ];
-        $tasks = Task::inRandomOrder()
-            ->with('project')
-            ->whereHas('project', function( $query ) {
-                $query->whereNot('status', Status::CLOSE);
-            });
-        $task = $tasks->first();
-        $task2 = $tasks->latest()->first();
+        $project = Project::factory()
+            ->set( 'status', Status::OPEN )
+            ->create();
+        $tasks = Task::factory(2)
+            ->for($project)
+            ->create();
 
-        $data = [
-            'title' => $task->title,
-            'description' => fake()->text,
-            'status' => TaskStatus::getRandomValue(),
-            'assignee' => User::inRandomOrder()->first()->id,
-            'difficulty' => $difficulties[ array_rand( $difficulties ) ],
-            'priority' => TaskPriority::getRandomValue()
-        ];
+        $newData = Task::factory()
+            ->set('title', $tasks->get(0)->title)
+            ->makeOne()
+            ->only('title', 'description', 'assignee', 'difficulty', 'priority');
 
-        $response = $this->patchJson( 'api/projects/' . $task->project->id . '/tasks/' . $task2->id, $data, $this->get_auth_header( $token ) );
+
+        $response = $this->patchJson( 'api/projects/' . $project->id . '/tasks/' . $tasks->get(1)->id, $newData, $this->get_auth_header( $token ) );
 
         $response->assertStatus( 422 );
 
@@ -87,23 +76,18 @@ class TaskUpdateTest extends TestCase
     {
 
         $token = $this->get_token();
-        $task = Task::inRandomOrder()
-            ->with('project')
-            ->whereHas('project', function( $query ) {
-                $query->whereNot('status', Status::CLOSE);
-            })
-            ->first();
 
-        $data = [
-            'title' => null,
-            'description' => fake()->text,
-            'status' => TaskStatus::getRandomValue(),
-            'assignee' => User::inRandomOrder()->first()->id,
-            'difficulty' => 4,
-            'priority' => TaskPriority::getRandomValue()
-        ];
+        $task = Task::factory()
+            ->set('status', TaskStatus::CLOSE)
+            ->for( Project::factory()
+                ->set( 'status', Status::CLOSE ) )
+            ->create();
 
-        $response = $this->patchJson( 'api/projects/' . $task->project->id . '/tasks/' . $task->id, $data, $this->get_auth_header( $token ) );
+        $newData = Task::factory()
+            ->makeOne()
+            ->only('assignee', 'difficulty', 'priority');
+
+        $response = $this->patchJson( 'api/projects/' . $task->project_id . '/tasks/' . $task->id, $newData, $this->get_auth_header( $token ) );
         $response->assertStatus( 422 );
 
     }
@@ -111,8 +95,10 @@ class TaskUpdateTest extends TestCase
     public function test_need_token()
     {
 
-        $task = Task::with('project')->first();
-        $response = $this->getJson( 'api/projects/' . $task->project->id . '/tasks/' . $task->id );
+        $task = Task::factory()
+            ->for( Project::factory())
+            ->create();
+        $response = $this->getJson( 'api/projects/' . $task->project_id . '/tasks/' . $task->id );
         $response->assertStatus( 401 );
 
     }

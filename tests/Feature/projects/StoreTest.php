@@ -10,6 +10,8 @@ use Tests\TestCase;
 class StoreTest extends TestCase
 {
 
+    use RefreshDatabase;
+
     public function test_project_creation()
     {
 
@@ -30,8 +32,6 @@ class StoreTest extends TestCase
             'id',
         ] );
         $this->assertDatabaseHas( 'projects', [ 'title' => $data[ 'title' ] ] );
-
-        Project::where( 'title', $data[ 'title' ] )->delete();
 
     }
 

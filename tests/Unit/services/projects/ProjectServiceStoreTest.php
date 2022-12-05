@@ -11,6 +11,8 @@ use Tests\TestCase;
 class ProjectServiceStoreTest extends TestCase
 {
 
+    use RefreshDatabase;
+
     public function test_store_new_project()
     {
 
@@ -21,9 +23,6 @@ class ProjectServiceStoreTest extends TestCase
         $service = new ProjectService();
         $service->store( $data );
         $this->assertDatabaseHas( 'projects', $data );
-
-        $data['id'] = '_';
-        $this->assertDatabaseMissing( 'projects', $data );
 
     }
 

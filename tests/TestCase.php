@@ -10,6 +10,8 @@ abstract class TestCase extends BaseTestCase
 {
     use CreatesApplication;
 
+    protected $seed = true;
+
     /**
      * Send request to login and return token
      *

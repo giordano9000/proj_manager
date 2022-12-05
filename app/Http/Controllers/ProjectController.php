@@ -70,7 +70,13 @@ class ProjectController extends Controller
     public function show( string $id )
     {
 
-        $project = $this->projectService->searchById( $id );
+        $project = $this->projectService->isValid( $id );
+
+        if ( !$project ) {
+
+            return response()->json( [ 'message' => 'Project not found.' ], 404 );
+
+        }
 
         return response()->json( $project );
 
@@ -88,6 +94,12 @@ class ProjectController extends Controller
 
         $params = $request->validated();
 
+        if ( !$this->projectService->isValid( $id ) ) {
+
+            return response()->json( [ 'message' => 'Project not found.' ], 404 );
+
+        }
+
         $project = $this->projectService->update( $id, $params );
 
         return response()->json( $project );
@@ -103,6 +115,12 @@ class ProjectController extends Controller
      */
     public function changeStatus( string $id, string $status )
     {
+
+        if ( !$this->projectService->isValid( $id ) ) {
+
+            return response()->json( [ 'message' => 'Project not found.' ], 404 );
+
+        }
 
         if ( !in_array( $status, Status::getValues() ) ) {
 

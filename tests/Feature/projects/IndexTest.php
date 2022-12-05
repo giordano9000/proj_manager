@@ -9,6 +9,8 @@ use Tests\TestCase;
 class IndexTest extends TestCase
 {
 
+    use RefreshDatabase;
+
     public function test_valid_request()
     {
 

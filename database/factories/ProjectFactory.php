@@ -19,7 +19,7 @@ class ProjectFactory extends Factory
     public function definition()
     {
         return [
-            'title' => fake()->country(),
+            'title' => fake()->unique()->city,
             'description' => fake()->text,
             'status' => Status::getRandomValue()
         ];

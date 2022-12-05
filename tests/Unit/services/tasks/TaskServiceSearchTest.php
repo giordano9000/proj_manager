@@ -4,64 +4,76 @@ namespace Tests\Unit\services\tasks;
 
 use App\Enums\ProjectSort;
 use App\Enums\Status;
+use App\Enums\TaskStatus;
 use App\Models\Task;
 use App\Models\Project;
 use App\Services\TaskService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class TaskServiceSearchTest extends TestCase
 {
+
+    use RefreshDatabase;
 
     public function test_searchById()
     {
 
         $task = Task::first();
         $service = new TaskService();
-        $this->assertSame( $task->id, $service->searchById( $task->id )['id'] );
+        $this->assertSame( $task->id, $service->searchById( $task->id )[ 'id' ] );
 
     }
 
     public function test_search_only_open()
     {
 
-        $project = Project::whereHas('closedTasks')->whereHas('unclosedTasks')->first();
-        $tasks = Task::where( 'status', Status::OPEN )->where('project_id', $project->id);
-        $service = new TaskService();
+        $tasks = Task::factory( 10 )
+            ->for( Project::factory()
+                ->set( 'status', Status::OPEN ) )
+            ->create();
 
+        $openTasks = $tasks->whereIn('status', [ TaskStatus::OPEN, TaskStatus::BLOCK ] );
+        $service = new TaskService();
         $searchParams = [
             'sortBy' => ProjectSort::ALPHA_ASC,
             'withClosed' => false,
             'onlyClosed' => false,
-            'perPage' => $tasks->count(),
+            'perPage' => $openTasks->count(),
         ];
 
-        $this->assertSame( $tasks->count(), $service->search( $project->id, $searchParams )->count() );
+        $this->assertSame( $openTasks->count(), $service->search( $tasks->first()->project_id, $searchParams )->count() );
 
     }
 
     public function test_search_only_closed()
     {
 
-        $project = Project::whereHas('closedTasks')->whereHas('unclosedTasks')->first();
-        $tasks = Task::where( 'status', Status::CLOSE )->where('project_id', $project->id);
+        $tasks = Task::factory( 10 )
+            ->for( Project::factory()
+                ->set( 'status', Status::OPEN ) )
+            ->create();
+        $closedTasks = $tasks->where('status', TaskStatus::CLOSE);
         $service = new TaskService();
 
         $searchParams = [
             'sortBy' => ProjectSort::ALPHA_ASC,
             'withClosed' => false,
             'onlyClosed' => true,
-            'perPage' => $tasks->count(),
+            'perPage' => $closedTasks->count(),
         ];
 
-        $this->assertSame( $tasks->count(), $service->search( $project->id, $searchParams )->count() );
+        $this->assertSame( $closedTasks->count(), $service->search( $tasks->first()->project_id, $searchParams )->count() );
 
     }
 
     public function test_search_with_closed()
     {
 
-        $project = Project::whereHas('closedTasks')->whereHas('unclosedTasks')->first();
-        $tasks = Task::where('project_id', $project->id);
+        $tasks = Task::factory( 10 )
+            ->for( Project::factory()
+                ->set( 'status', Status::OPEN ) )
+            ->create();
         $service = new TaskService();
 
         $searchParams = [
@@ -71,7 +83,7 @@ class TaskServiceSearchTest extends TestCase
             'perPage' => $tasks->count(),
         ];
 
-        $this->assertSame( $tasks->count(), $service->search( $project->id, $searchParams )->count() );
+        $this->assertSame( $tasks->count(), $service->search( $tasks->first()->project_id, $searchParams )->count() );
 
     }
 

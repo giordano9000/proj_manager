@@ -10,11 +10,7 @@ use App\Models\User;
 
 class LoginTest extends TestCase
 {
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
+
     public function test_valid_credentials()
     {
 

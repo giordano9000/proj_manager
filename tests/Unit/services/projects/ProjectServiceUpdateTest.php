@@ -11,6 +11,8 @@ use App\Models\Project;
 class ProjectServiceUpdateTest extends TestCase
 {
 
+    use RefreshDatabase;
+
     public function test_update_project()
     {
 

@@ -42,7 +42,7 @@ class TaskController extends Controller
 
         if ( !$this->projectService->isValid( $projectId ) ) {
 
-            return response()->json( [ 'message' => 'Task not found.' ], 404 );
+            return response()->json( [ 'message' => 'Project not found.' ], 404 );
 
         }
 
