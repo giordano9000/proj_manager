@@ -46,6 +46,7 @@ class TasksShowTest extends TestCase
             ->has( Task::factory( 3 ))
             ->create();
         $task = $project->tasks()->first();
+
         $response = $this->getJson( 'api/projects/' . $project->slug . '/tasks/' . $task->slug, $this->get_auth_header($token) );
         $response->assertStatus( 200 );
 

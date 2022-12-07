@@ -24,13 +24,15 @@ class TaskFactory extends Factory
         $difficulties = [ 1, 2, 3, 5, 8, 13, 21 ];
 
         return [
-            'title' => fake()->unique()->address,
+            'id' => fake()->uuid,
+            'title' => fake()->unique()->city,
             'description' => fake()->text,
             'difficulty' => $difficulties[ array_rand( $difficulties ) ],
             'status' => TaskStatus::getRandomValue(),
             'priority' => TaskPriority::getRandomValue(),
             'assignee' => User::select('id')->inRandomOrder()->first(),
             'project_id' => Project::select('id')->inRandomOrder()->first(),
+            'slug' => null,
         ];
     }
 }

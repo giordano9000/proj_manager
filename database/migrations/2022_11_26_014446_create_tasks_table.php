@@ -24,9 +24,9 @@ return new class extends Migration {
             $table->smallInteger( 'difficulty' );
             $table->enum( 'status', TaskStatus::getValues() )->default( TaskStatus::OPEN );
             $table->enum( 'priority', TaskPriority::getValues() )->default( TaskPriority::LOW );
-
             $table->uuid('assignee')->references('id')->on('users');
             $table->foreignUuid('project_id');
+            $table->string('slug')->nullable();
 
             $table->timestamps();
 

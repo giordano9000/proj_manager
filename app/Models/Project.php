@@ -39,17 +39,11 @@ class Project extends SearchableModel
     /**
      * @var string[]
      */
-    protected $appends = [
-        'slug'
-    ];
-
-    /**
-     * @var string[]
-     */
     protected $fillable = [
         'title',
         'description',
-        'status'
+        'status',
+        'slug'
     ];
 
     /**
@@ -69,12 +63,9 @@ class Project extends SearchableModel
         'id' => 'string'
     ];
 
-    /**
-     * @return string
-     */
-    public function getSlugAttribute()
+    public function setSlugAttribute(): void
     {
-        return $this->id . '-' . $this->title;
+        $this->attributes['slug'] = $this->id . '-' . $this->title;
     }
 
     /**
@@ -145,7 +136,7 @@ class Project extends SearchableModel
         $query = $this->query();
 
         $query->where( 'id', $id )
-            ->orWhere( DB::raw("CONCAT(`id`, '-', `title`)"), 'LIKE', $id );
+            ->orWhere( 'slug', $id );
 
         $query = $this->addOpenTaskCounter( $query );
         $query = $this->addClosedTaskCounter( $query );

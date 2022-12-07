@@ -70,7 +70,7 @@ class TaskService
             'priority' => $params[ 'priority' ],
             'project_id' => $projectId
         ] );
-
+        $task->setSlugAttribute();
         $task->save();
 
         return $task->only( 'id', 'title', 'description', 'assignee', 'difficulty', 'priority', 'slug' );
@@ -95,7 +95,7 @@ class TaskService
         $task->assignee = $params[ 'assignee' ];
         $task->difficulty = $params[ 'difficulty' ];
         $task->priority = $params[ 'priority' ];
-
+        $task->setSlugAttribute();
         $task->save();
 
         return $task->only( 'id', 'title', 'description', 'slug', 'assignee', 'difficulty', 'priority', 'status' );
@@ -125,8 +125,9 @@ class TaskService
      */
     public function isValid( string $taskId, string $projectId ): mixed
     {
-
+//die($taskId . '    ' . $projectId);
         $task = $this->taskModel->searchById( $taskId, $projectId );
+//die(print_r($task, 1));
 
         if ( !$task ) {
 

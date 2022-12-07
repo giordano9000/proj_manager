@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('title')->unique()->nullable(false);
             $table->text('description')->nullable();
             $table->enum( 'status', Status::getValues() )->default( Status::OPEN );
+            $table->string('slug')->nullable();
 
             $table->timestamps();
 

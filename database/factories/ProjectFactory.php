@@ -18,10 +18,13 @@ class ProjectFactory extends Factory
      */
     public function definition()
     {
+
         return [
+            'id' => fake()->uuid,
             'title' => fake()->unique()->city,
             'description' => fake()->text,
-            'status' => Status::getRandomValue()
+            'status' => Status::getRandomValue(),
+            'slug' => null,
         ];
     }
 }

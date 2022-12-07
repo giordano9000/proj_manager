@@ -39,13 +39,6 @@ class Task extends SearchableModel
     /**
      * @var string[]
      */
-    protected $appends = [
-        'slug'
-    ];
-
-    /**
-     * @var string[]
-     */
     protected $fillable = [
         'title',
         'description',
@@ -53,7 +46,8 @@ class Task extends SearchableModel
         'assignee',
         'difficulty',
         'priority',
-        'project_id'
+        'project_id',
+        'slug'
     ];
 
     /**
@@ -73,12 +67,9 @@ class Task extends SearchableModel
         'id' => 'string'
     ];
 
-    /**
-     * @return string
-     */
-    public function getSlugAttribute()
+    public function setSlugAttribute() : void
     {
-        return $this->id . '-' . $this->title;
+        $this->attributes[ 'slug' ] = $this->id . '-' . $this->title;
     }
 
     /**
@@ -109,71 +100,73 @@ class Task extends SearchableModel
 
                 return $query->whereHas( 'project', function ( $builder ) use ( $projectId ) {
                     $builder->where( 'id', $projectId )
-                        ->orWhere( DB::raw( "CONCAT(`id`, '-', `title`)" ), 'LIKE', $projectId );
+                        ->orWhere( 'slug', $projectId );
                 } );
 
             } );
 
         }
 
-        $query->where( 'id', $taskId )
-            ->orWhere( DB::raw( "CONCAT(`id`, '-', `title`)" ), 'LIKE', $taskId );
+        $query->where( function ( Builder $query ) use ( $taskId ) {
 
-    return $query->first();
+            return $query->where( 'id', $taskId )
+                ->orWhere( 'slug', $taskId );
 
-}
+        } );
 
-/**
- * Search by params
- *
- * @param string $projectId
- * @param array $params
- * @return array|Builder[]|Collection
- */
-public
-function search( string $projectId, array $params )
-{
-
-    $query = $this->newQuery();
-    $query->select( 'id', 'title', 'description', 'assignee', 'difficulty', 'priority', 'status' );
-    $query->where( 'project_id', $projectId );
-
-    $query = $this->addStatusStatement( $query, $params );
-    $query = $this->addOrderByStatement( $query, $params );
-
-    $query->paginate( $params[ 'perPage' ] );
-
-    return $query->get();
-
-}
-
-/**
- * Add status conditions to query
- *
- * @param Builder $query
- * @param array $params
- * @return Builder
- */
-public
-function addStatusStatement( Builder $query, array $params ) : Builder
-{
-
-    if ( !empty( $params[ 'withClosed' ] ) ) {
-
-        $query->whereIn( 'status', TaskStatus::getValues() );
-
-    } else if ( !empty( $params[ 'onlyClosed' ] ) ) {
-
-        $query->where( 'status', TaskStatus::CLOSE );
-
-    } else {
-
-        $query->whereIn( 'status', [ TaskStatus::OPEN, TaskStatus::BLOCK ] );
+        return $query->first();
 
     }
 
-    return $query;
+    /**
+     * Search by params
+     *
+     * @param string $projectId
+     * @param array $params
+     * @return array|Builder[]|Collection
+     */
+    public function search( string $projectId, array $params )
+    {
 
-}
+        $query = $this->newQuery();
+        $query->select( 'id', 'title', 'description', 'assignee', 'difficulty', 'priority', 'status' );
+        $query->where( 'project_id', $projectId );
+
+        $query = $this->addStatusStatement( $query, $params );
+        $query = $this->addOrderByStatement( $query, $params );
+
+        $query->paginate( $params[ 'perPage' ] );
+
+        return $query->get();
+
+    }
+
+    /**
+     * Add status conditions to query
+     *
+     * @param Builder $query
+     * @param array $params
+     * @return Builder
+     */
+    public function addStatusStatement( Builder $query, array $params ) : Builder
+    {
+
+        if ( !empty( $params[ 'withClosed' ] ) ) {
+
+            $query->whereIn( 'status', TaskStatus::getValues() );
+
+        } else if ( !empty( $params[ 'onlyClosed' ] ) ) {
+
+            $query->where( 'status', TaskStatus::CLOSE );
+
+        } else {
+
+            $query->whereIn( 'status', [ TaskStatus::OPEN, TaskStatus::BLOCK ] );
+
+        }
+
+        return $query;
+
+    }
 
 }
