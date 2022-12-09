@@ -21,7 +21,7 @@ class TaskServiceSearchTest extends TestCase
 
         $task = Task::first();
         $service = new TaskService();
-        $this->assertSame( $task->id, $service->searchById( $task->id )[ 'id' ] );
+        $this->assertSame( $task->id, $service->searchById( $task->id )->id );
 
     }
 

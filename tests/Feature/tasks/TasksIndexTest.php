@@ -25,6 +25,7 @@ class TasksIndexTest extends TestCase
             ->create();
 
         $response = $this->getJson( 'api/projects/' . $project->id . '/tasks?page=1&perPage=8&sortBy=alpha_desc', $this->get_auth_header($token) );
+
         $response->assertStatus( 200 );
         $response->assertJsonStructure( [
             '*' => [

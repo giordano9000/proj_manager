@@ -18,7 +18,6 @@ class ChangeStatusTest extends TestCase
     {
 
         $token = $this->get_token();
-
         $project = Project::factory()
             ->set( 'status', Status::OPEN )
             ->has( Task::factory( 3 )
@@ -26,7 +25,9 @@ class ChangeStatusTest extends TestCase
             ->create();
 
         $response = $this->patchJson( 'api/projects/' . $project->id . '/close', [], $this->get_auth_header( $token ) );
+
         $response->assertStatus( 204 );
+        $this->assertDatabaseHas( 'projects', [ 'id' => $project->id, 'status' => Status::CLOSE ] );
 
     }
 

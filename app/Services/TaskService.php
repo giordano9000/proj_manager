@@ -30,12 +30,12 @@ class TaskService
      * @param $params
      * @return \Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection
      */
-    public function searchById( string $taskId ): array
+    public function searchById( string $taskId ): Task
     {
 
         $task = $this->taskModel->searchById( $taskId );
 
-        return $task->only( 'id', 'title', 'description', 'slug', 'assignee', 'difficulty', 'priority', 'status' );
+        return $task;
 
     }
 
@@ -48,8 +48,7 @@ class TaskService
     public function search( string $projectId, array $params )
     {
 
-        $project = $this->projectModel->searchById( $projectId );
-        return $this->taskModel->search( $project->id, $params );
+        return $this->taskModel->search( $projectId, $params );
 
     }
 
@@ -73,7 +72,7 @@ class TaskService
         $task->setSlugAttribute();
         $task->save();
 
-        return $task->only( 'id', 'title', 'description', 'assignee', 'difficulty', 'priority', 'slug' );
+        return $task;
 
     }
 
@@ -98,7 +97,7 @@ class TaskService
         $task->setSlugAttribute();
         $task->save();
 
-        return $task->only( 'id', 'title', 'description', 'slug', 'assignee', 'difficulty', 'priority', 'status' );
+        return $task;
 
     }
 

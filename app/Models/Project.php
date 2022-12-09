@@ -107,7 +107,7 @@ class Project extends SearchableModel
     private function addOpenTaskCounter( Builder $query ): Builder
     {
         return $query->withCount( [ 'tasks AS open_tasks' => function ( Builder $q ) {
-            $q->where( 'status', 'open' );
+            $q->whereIn( 'status', [ TaskStatus::OPEN, TaskStatus::BLOCK ] );
         } ] );
     }
 
@@ -120,7 +120,7 @@ class Project extends SearchableModel
     private function addClosedTaskCounter( Builder $query )
     {
         return $query->withCount( [ 'tasks AS closed_tasks' => function ( Builder $q ) {
-            $q->where( 'status', 'close' );
+            $q->where( 'status', TaskStatus::CLOSE );
         } ] );
     }
 

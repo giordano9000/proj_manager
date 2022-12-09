@@ -11,6 +11,8 @@ use App\Models\User;
 class LoginTest extends TestCase
 {
 
+    use RefreshDatabase;
+
     public function test_valid_credentials()
     {
 

@@ -16,13 +16,17 @@ class ProjectServiceStoreTest extends TestCase
     public function test_store_new_project()
     {
 
-        $data = [
+        $project = new Project( [
             'title' => fake()->address,
             'description' => fake()->city,
-        ];
+        ] );
+
+        $this->assertDatabaseMissing( 'projects', $project->getAttributes() );
         $service = new ProjectService();
-        $service->store( $data );
-        $this->assertDatabaseHas( 'projects', $data );
+        $storedProject = $service->store( $project );
+
+        $this->assertSame( $storedProject->only( [ 'title', 'description' ] ), $project->only( [ 'title', 'description' ] ) );
+        $this->assertModelExists( $storedProject );
 
     }
 

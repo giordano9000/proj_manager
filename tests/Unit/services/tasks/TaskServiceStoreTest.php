@@ -20,15 +20,17 @@ class TaskServiceStoreTest extends TestCase
     {
 
         $project = Project::factory()
-            ->set('status', Status::OPEN)
+            ->set( 'status', Status::OPEN )
             ->create();
         $data = Task::factory()
             ->makeOne()
-            ->only('title', 'description', 'assignee', 'difficulty', 'priority');
-        $service = new TaskService();
-        $service->store( $project->id, $data );
+            ->only( 'title', 'description', 'assignee', 'difficulty', 'priority' );
 
+        $this->assertDatabaseMissing( 'tasks', $data );
+        $service = new TaskService();
+        $task = $service->store( $project->id, $data );
         $this->assertDatabaseHas( 'tasks', $data );
+        $this->assertModelExists( $task );
 
     }
 

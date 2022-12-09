@@ -40,15 +40,17 @@ class TaskController extends Controller
 
         $params = $request->validated();
 
-        if ( !$this->projectService->isValid( $projectId ) ) {
+        $project = $this->projectService->isValid( $projectId );
+
+        if ( !$project ) {
 
             return response()->json( [ 'message' => 'Project not found.' ], 404 );
 
         }
 
-        $projects = $this->taskService->search( $projectId, $params );
+        $tasks = $this->taskService->search( $project->id, $params );
 
-        return response()->json( $projects );
+        return response()->json( $tasks );
 
     }
 
@@ -69,9 +71,9 @@ class TaskController extends Controller
 
         }
 
-        $project = $this->taskService->store( $projectId, $params );
+        $task = $this->taskService->store( $projectId, $params );
 
-        return response()->json( $project );
+        return response()->json( $task->only( 'id', 'title', 'description', 'assignee', 'difficulty', 'priority', 'slug' ) );
 
     }
 
@@ -98,7 +100,7 @@ class TaskController extends Controller
 
         $task = $this->taskService->searchById( $taskId );
 
-        return response()->json( $task );
+        return response()->json( $task->only( 'id', 'title', 'description', 'slug', 'assignee', 'difficulty', 'priority', 'status' ) );
 
     }
 
@@ -126,9 +128,9 @@ class TaskController extends Controller
 
         }
 
-        $project = $this->taskService->update( $taskId, $params );
+        $task = $this->taskService->update( $taskId, $params );
 
-        return response()->json( $project );
+        return response()->json( $task->only( 'id', 'title', 'description', 'slug', 'assignee', 'difficulty', 'priority', 'status' ) );
 
     }
 

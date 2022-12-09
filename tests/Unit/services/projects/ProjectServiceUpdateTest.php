@@ -18,11 +18,14 @@ class ProjectServiceUpdateTest extends TestCase
 
         $project = Project::inRandomOrder()->first();
         $service = new ProjectService();
-        $oldData = $project->only('title', 'description');
+        $oldData = $project->only( 'title', 'description' );
+
         $newData = [
             'title' => fake()->password,
             'description' => fake()->city,
         ];
+        $this->assertDatabaseMissing( 'projects', $newData );
+
         $service->update( $project->id, $newData );
 
         $this->assertDatabaseHas( 'projects', $newData );

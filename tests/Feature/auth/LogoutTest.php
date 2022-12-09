@@ -17,9 +17,9 @@ class LogoutTest extends TestCase
     {
 
         $token = $this->get_token();
-        $response = $this->postJson( 'api/logout' )->withHeaders( [ 'Authorization' => 'Bearer ' . $token ] );
-        $json = json_decode($response->getContent());
-        $this->assertSame( $json->status, 'success');
+        $response = $this->postJson( 'api/logout', [], $this->get_auth_header( $token ) );
+        $json = json_decode( $response->getContent() );
+        $this->assertSame( $json->status, 'success' );
 
     }
 
@@ -28,7 +28,7 @@ class LogoutTest extends TestCase
 
         $response = $this->postJson( 'api/logout' );
 
-        $response->assertStatus(401);
+        $response->assertStatus( 401 );
 
     }
 

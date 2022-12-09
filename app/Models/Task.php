@@ -129,7 +129,7 @@ class Task extends SearchableModel
     {
 
         $query = $this->newQuery();
-        $query->select( 'id', 'title', 'description', 'assignee', 'difficulty', 'priority', 'status' );
+        $query->select( 'id', 'title', 'description', 'assignee', 'difficulty', 'priority', 'status', 'slug' );
         $query->where( 'project_id', $projectId );
 
         $query = $this->addStatusStatement( $query, $params );
